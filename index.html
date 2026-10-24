@@ -156,6 +156,51 @@ h3{font-family:var(--display);font-weight:700;font-size:18px;margin:0}
 .fade-in{animation:fin .25s ease-out}
 @keyframes fin{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- gamificação ---------- */
+.tabmoney{font-size:12px;font-weight:700;opacity:.75;font-variant-numeric:tabular-nums}
+.news{display:flex;gap:14px;align-items:flex-start;padding:18px;border-radius:var(--r);border:2px solid var(--scrub);background:var(--surface);margin-bottom:20px}
+.newbadge{flex:0 0 auto;font-family:var(--display);font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.08em;padding:6px 10px;border-radius:10px;box-shadow:inset 0 -3px 0 var(--scrub)}
+.newsbody{display:flex;flex-direction:column;gap:10px;align-items:flex-start;min-width:0}
+.newsbody p{margin:0;max-width:62ch}
+.pmoney{font-family:var(--display);font-weight:800;font-size:30px;line-height:1;font-variant-numeric:tabular-nums;color:var(--scrub)}
+.pmoney small{font-family:var(--body);font-size:13px;font-weight:600;color:var(--muted)}
+.wallet{border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:8px;box-shadow:inset 0 -8px 0 var(--scrub)}
+.wlabel{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.amt{font-family:var(--display);font-weight:800;font-size:clamp(46px,12vw,72px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.amt.bump{animation:bump .5s ease-out}
+@keyframes bump{30%{transform:scale(1.08)}}
+.wsub{font-weight:600;font-size:14px}
+.wbar{height:12px;border-radius:99px;background:rgba(42,34,8,.15);overflow:hidden;margin-bottom:6px}
+.wbar i{display:block;height:100%;background:var(--sponge-ink);border-radius:99px}
+.wlvl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;font-size:14px}
+.lvl{font-weight:800;background:var(--sponge-ink);color:var(--sponge);padding:5px 10px;border-radius:999px;font-size:13px}
+.taskrow,.steprow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.valtag,.cardval{font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cardval{font-size:14px;padding:6px 12px}
+.valtag.team,.cardval.team{background:var(--scrub);color:var(--scrub-ink)}
+.bonusnote{font-weight:700;color:var(--scrub);font-size:15px}
+.wchip{font-family:var(--display);font-weight:800;padding:8px 12px;border-radius:12px;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.chest,.chest-big{background:var(--surface);border:2px dashed var(--sponge-pore);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px}
+.chest-big{flex-direction:row;align-items:center;gap:16px}
+.chest-head{display:flex;align-items:center;gap:14px}
+.chest-ico{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:32px;flex:0 0 auto;box-shadow:inset 0 -6px 0 var(--scrub);animation:wiggle 3.5s ease-in-out infinite}
+@keyframes wiggle{0%,86%,100%{transform:rotate(0)}89%{transform:rotate(-8deg)}92%{transform:rotate(7deg)}95%{transform:rotate(-4deg)}}
+.teasers{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.teasers li{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--sunken);border:1px solid var(--line)}
+.teasers .lk{flex:0 0 auto;min-width:48px;text-align:center;font-weight:800;font-size:13px;padding:4px 8px;border-radius:8px;background:var(--line);font-variant-numeric:tabular-nums}
+.teasers li.locked span:last-child{color:var(--muted);filter:blur(.3px)}
+.teasers li.open{border-color:var(--scrub)}
+.teasers li.open .lk{background:var(--scrub);color:var(--scrub-ink)}
+.teasers li.open span:last-child{font-weight:700}
+.approved{border:2px solid var(--scrub);position:relative;overflow:hidden}
+.stamp{align-self:flex-start;font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--scrub);border:3px solid var(--scrub);border-radius:8px;padding:4px 10px;transform:rotate(-4deg)}
+.floater{position:fixed;left:50%;top:38%;z-index:70;pointer-events:none;font-family:var(--display);font-weight:800;font-size:40px;color:var(--scrub);background:var(--surface);padding:6px 16px;border-radius:14px;border:2px solid var(--scrub);font-variant-numeric:tabular-nums;white-space:nowrap;animation:floatup 1.2s ease-out forwards}
+.floater.big{font-size:32px;top:30%;color:var(--sponge-ink);background:var(--sponge);border-color:var(--sponge-pore)}
+@keyframes floatup{0%{opacity:0;transform:translate(-50%,16px) scale(.8)}15%{opacity:1;transform:translate(-50%,0) scale(1.1)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-90px) scale(1)}}
+.confetto{position:fixed;top:-16px;width:9px;height:15px;z-index:65;border-radius:2px;pointer-events:none;animation:fall 1.6s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(620deg)}}
+@media (max-width:560px){.chest-big{flex-direction:column;align-items:flex-start}.news{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -294,166 +339,175 @@ const BY={}; ALL.forEach(t=>BY[t.id]=t);
 
 /* ---------- estado ---------- */
 const KEY="operacao-visita-v1";
-let S={seed:null,done:{},me:null};
+let S={seed:null,done:{},me:null,approved:{},seenNews:false};
 try{const raw=localStorage.getItem(KEY); if(raw){S=Object.assign(S,JSON.parse(raw));}}catch(e){}
+S.approved=S.approved||{}; S.done=S.done||{};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
-let view="plano", rolling=false, confirmReset=false, codeErr="";
+let view="plano", vistoria=null, pinErr="";
 
-/* ---------- sorteio justo e reproduzível ---------- */
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
-function computeAssign(seed){
-  const r=mulberry32(seed);
-  const dryer=r()<0.5?"kaue":"ayron";
-  const rest=["organizar","sala","banheiro","mesa","chao"];
-  const ok=[];
-  for(let n=0;n<243;n++){
-    let x=n; const a={lavar:"mariah",secar:dryer};
-    for(const t of rest){a[t]=ORDER[x%3];x=Math.floor(x/3);}
-    const load={kaue:0,mariah:0,ayron:0},cnt={kaue:0,mariah:0,ayron:0};
-    for(const t in a){load[a[t]]+=BY[t].min;cnt[a[t]]++;}
-    if(Math.min(cnt.kaue,cnt.mariah,cnt.ayron)<2) continue;
-    const v=[load.kaue,load.mariah,load.ayron];
-    if(Math.max(...v)-Math.min(...v)<=10) ok.push(a);
-  }
-  return ok[Math.floor(r()*ok.length)];
-}
-function assign(){return S.seed?computeAssign(S.seed):null;}
-function tasksOf(p,A){return TASKS.filter(t=>(A?A[t.id]:(t.fixed||null))===p);}
+/* ---------- divisão fechada (sorteio 7432) ---------- */
+const FIXED={organizar:"kaue",banheiro:"kaue",lavar:"mariah",sala:"mariah",secar:"ayron",mesa:"ayron",chao:"ayron"};
+if(S.seed!==7432){S.seed=7432;save();}
+function assign(){return FIXED;}
+
+/* ---------- dinheiro (ajuste aqui) ---------- */
+const VALOR_POR_MINUTO=0.20;   // R$ por minuto de serviço da tarefa
+const BONUS_TAREFA=1.00;       // R$ extra quando termina uma tarefa inteira
+const PIN_HASH=2090616753;     // senha da vistoria do Tio Pira
+
+function cents(v){return Math.round(v*100);}
+function potC(t){return cents(t.min*VALOR_POR_MINUTO);}
+function stepC(t,k){const n=t.steps.length,p=potC(t),b=Math.floor(p/n);return k===n-1?p-b*(n-1):b;}
+function brl(c){return "R$ "+(c/100).toFixed(2).replace(".",",");}
 function doneArr(id){return S.done[id]||[];}
+function isFull(t){return doneArr(t.id).length>=t.steps.length;}
+function earnedTask(t){return doneArr(t.id).reduce((s,k)=>s+stepC(t,k),0)+(isFull(t)?cents(BONUS_TAREFA):0);}
+function maxTask(t){return potC(t)+cents(BONUS_TAREFA);}
+function tasksOf(p){return TASKS.filter(t=>FIXED[t.id]===p);}
+function earned(p){return tasksOf(p).reduce((s,t)=>s+earnedTask(t),0);}
+function maxOf(p){return tasksOf(p).reduce((s,t)=>s+maxTask(t),0);}
 function pct(list){let tot=0,d=0;list.forEach(t=>{tot+=t.steps.length;d+=doneArr(t.id).length;});return tot?Math.round(d/tot*100):0;}
 function mins(list){return list.reduce((s,t)=>s+t.min,0);}
+function hash(s){let x=5381;for(const c of s)x=((x<<5)+x+c.charCodeAt(0))>>>0;return x;}
+
+const LEVELS=[[0,"Imundo do sofá"],[15,"Sujinho em recuperação"],[40,"Aprendiz de esponja"],[70,"Faxineiro de respeito"],[100,"Lenda da vassoura"]];
+function level(pc){let i=0;LEVELS.forEach((l,k)=>{if(pc>=l[0])i=k;});return {i,name:LEVELS[i][1],next:LEVELS[i+1]};}
+const TEASERS=[[25,"Pista 1: não é miojo."],[50,"Pista 2: vem com bebida gelada."],[75,"Pista 3: cada um escolhe o seu."],[100,"Você terminou. Agora só falta a vistoria."]];
 
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
-function avatar(p,size){const P=PEOPLE[p];return `<span class="avatar" style="background:${P.c}${size?`;width:${size}px;height:${size}px`:""}">${P.name[0]}</span>`;}
+function avatar(p){return `<span class="avatar" style="background:${PEOPLE[p].c}">${PEOPLE[p].name[0]}</span>`;}
 function nameTag(p){const P=PEOPLE[p];return `<span class="tagname"><span class="dot" style="background:${P.c}"></span>${P.name}</span>`;}
 
 function renderTabs(){
   const items=[["plano","Plano"],...ORDER.map(p=>[p,PEOPLE[p].name]),["comodos","Por cômodo"]];
-  $("#tabs").innerHTML=items.map(([id,l])=>`<button class="tab" role="tab" id="tab-${id}" aria-selected="${view===id}" data-view="${id}">${PEOPLE[id]?`<span class="dot" style="background:${PEOPLE[id].c}"></span>`:""}${l}</button>`).join("");
+  $("#tabs").innerHTML=items.map(([id,l])=>`<button class="tab" role="tab" id="tab-${id}" aria-selected="${view===id}" data-view="${id}">${PEOPLE[id]?`<span class="dot" style="background:${PEOPLE[id].c}"></span>`:""}${l}${PEOPLE[id]?` <span class="tabmoney">${brl(earned(id))}</span>`:""}</button>`).join("");
 }
 
-function taskCard(t,A){
+function taskCard(t){
   const d=doneArr(t.id).length, n=t.steps.length, full=d>=n;
-  const who=t.all?"Os três juntos":(A&&A[t.id]?PEOPLE[A[t.id]].name:(t.fixed?PEOPLE[t.fixed].name:"Sorteio"));
+  const who=t.all?"Os três juntos":PEOPLE[FIXED[t.id]].name;
+  const val=t.all?`<span class="valtag team">Libera o lanche</span>`:`<span class="valtag sponge">${full?"Ganhou "+brl(earnedTask(t)):"Vale até "+brl(maxTask(t))}</span>`;
   return `<button class="task${full?" done":""}" data-open="${t.id}">
     <span class="stripe sponge"></span>
     <span class="inner">
-      <span class="room">${ROOMS[t.room]} · fase ${t.phase}</span>
+      <span class="taskrow"><span class="room">${ROOMS[t.room]} · fase ${t.phase}</span>${val}</span>
       <strong>${t.name}</strong>
-      <span class="meta"><span>${n} passos · uns ${t.min} min · ${who}</span><span class="open">${full?"Feito ✓":d?"Continuar →":"Abrir cards →"}</span></span>
+      <span class="meta"><span>${n} cards · uns ${t.min} min · ${who}</span><span class="open">${full?"Feito ✓":d?"Continuar →":"Abrir cards →"}</span></span>
       <span class="bar"><i style="width:${Math.round(d/n*100)}%"></i></span>
     </span></button>`;
 }
 
+function newsBanner(){
+  if(S.seenNews) return "";
+  return `<div class="news fade-in"><span class="newbadge sponge">Novo</span><div class="newsbody">
+    <h3>A página foi atualizada: agora a faxina paga.</h3>
+    <p>Cada card que você marcar como feito vira dinheiro na sua carteira. Terminou uma tarefa inteira? Ganha bônus. No final tem a vistoria do Tio Pira e, se aprovar, o <b>Lanche do Tio Pira</b>.</p>
+    <button class="btn btn-dark" id="newsOk">Bora ganhar dinheiro</button></div></div>`;
+}
+
+function chest(p){
+  const pc=pct(tasksOf(p)), ok=S.approved[p];
+  const items=TEASERS.map(([n,txt])=>{const open=ok||pc>=n;return `<li class="${open?"open":"locked"}"><span class="lk">${open?"✓":n+"%"}</span><span>${open?txt:"Bloqueado. Chega em "+n+"% pra ver."}</span></li>`;}).join("");
+  return `<div class="chest">
+    <div class="chest-head"><span class="chest-ico sponge" aria-hidden="true">?</span><div><span class="eyebrow">Prêmio final</span><h2>Lanche do Tio Pira</h2></div></div>
+    <p class="muted" style="margin:0">${ok?"Liberado. Pode cobrar o Tio Pira.":"Ninguém sabe ainda o que é. As pistas vão aparecendo conforme você avança nos seus cards."}</p>
+    <ul class="teasers">${items}</ul></div>`;
+}
+
+function vistoriaPanel(p){
+  const l=tasksOf(p), pc=pct(l), name=PEOPLE[p].name;
+  if(S.approved[p]) return `<div class="panel approved"><span class="stamp">Aprovado</span><h3>Vistoria do Tio Pira: aprovada</h3><p style="margin:0">${name} recebe <b>${brl(earned(p))}</b> e o lanche está garantido.</p></div>`;
+  if(pc<100) return `<div class="panel"><h3>Vistoria do Tio Pira</h3><p class="muted" style="margin:0">Bloqueada até você terminar todos os seus cards (${pc}% agora). Quando chegar em 100%, chama o Tio Pira. Ele confere cômodo por cômodo e só aprova se estiver limpo de verdade.</p><div class="warnbox">Marcou card sem fazer? A vistoria pega, e aí a carteira volta pra zero.</div></div>`;
+  if(vistoria!==p) return `<div class="panel"><h3>Vistoria do Tio Pira</h3><p style="margin:0">Você terminou tudo. Agora chama o Tio Pira pra conferir.</p><div><button class="btn btn-main sponge" id="vOpen" data-p="${p}">Chamar o Tio Pira</button></div></div>`;
+  return `<div class="panel"><h3>Tio Pira, sua vez</h3><p class="muted" style="margin:0">Confere tudo que ${name} fez antes de digitar a senha.</p>
+    <div class="code-box"><input id="pinIn" type="password" autocomplete="off" placeholder="Senha" aria-label="Senha da vistoria" style="width:160px;letter-spacing:.1em"><button class="btn btn-dark" id="pinOk" data-p="${p}">Aprovar</button><button class="btn btn-ghost" id="pinNo">Cancelar</button></div>
+    ${pinErr?`<div class="warnbox">${pinErr}</div>`:""}</div>`;
+}
+
 /* ---------- views ---------- */
 function renderPlano(){
-  const A=assign();
-  if(!A || rolling){
-    return `<section class="section">
-      <div class="panel">
-        <h2>Como funciona o sorteio</h2>
-        <ul class="rules">
-          <li><b>Mariah lava a louça.</b> Isso já estava combinado.</li>
-          <li><b>Secar a louça</b> é cara ou coroa entre Kauê e Ayron.</li>
-          <li><b>O resto é sorteado,</b> mas o app só aceita um resultado em que a diferença de tempo de serviço entre vocês três seja de no máximo 10 minutos, e todo mundo pegue pelo menos 2 tarefas. Ninguém fica com uma hora de faxina enquanto o outro fica com 15 minutos.</li>
-          <li>Faz o sorteio em <b>um celular só</b>. Ele gera um código de 4 números: os outros digitam o código no celular deles e aparece o mesmo resultado.</li>
-        </ul>
-        <div><button class="btn btn-main sponge" id="drawBtn" ${rolling?"disabled":""}>${rolling?"Sorteando…":"Sortear agora"}</button></div>
-      </div>
-      <div class="draw-table" aria-live="polite">
-        ${TASKS.map(t=>`<div class="draw-row"><div class="tname">${t.name}<div class="tsub">${ROOMS[t.room]} · uns ${t.min} min${t.fixed?" · fixo":t.lottery?" · cara ou coroa":""}</div></div><span class="slot" data-slot="${t.id}">${t.fixed?PEOPLE[t.fixed].name:"?"}</span></div>`).join("")}
-      </div>
-      ${rolling?"":`<div class="panel">
-        <h3>Já sortearam em outro celular?</h3>
-        <p class="muted" style="margin:0">Digita o código que apareceu lá.</p>
-        <div class="code-box"><input id="codeIn" inputmode="numeric" maxlength="4" placeholder="0000" aria-label="Código do sorteio"><button class="btn btn-dark" id="codeBtn">Usar código</button></div>
-        ${codeErr?`<div class="warnbox">${codeErr}</div>`:""}
-      </div>`}
-    </section>`;
-  }
-  const people=ORDER.map(p=>{const l=tasksOf(p,A);return `<button class="pcard" data-view="${p}">
-      <span class="pcard-head">${avatar(p)}<span><span class="who">${PEOPLE[p].name}</span><br><span class="mins">uns ${mins(l)} min · ${l.length} tarefas · ${pct(l)}% feito</span></span></span>
+  const people=ORDER.map(p=>{const l=tasksOf(p),pc=pct(l),lv=level(pc);return `<button class="pcard" data-view="${p}">
+      <span class="pcard-head">${avatar(p)}<span><span class="who">${PEOPLE[p].name}</span><br><span class="mins">${lv.name}</span></span></span>
+      <span class="pmoney">${brl(earned(p))}<small> de ${brl(maxOf(p))}</small></span>
       <span class="chips">${l.map(t=>`<span class="chip">${t.name}</span>`).join("")}</span>
-      <span class="bar"><i style="width:${pct(l)}%"></i></span></button>`;}).join("");
+      <span class="bar"><i style="width:${pc}%"></i></span>
+      <span class="mins">${S.approved[p]?"Vistoria aprovada ✓":pc+"% feito · uns "+mins(l)+" min"}</span></button>`;}).join("");
   const phases=PHASES.map(ph=>{
     const list=ALL.filter(t=>t.phase===ph.n);
     return `<div class="phase"><span class="phase-n sponge">${ph.n}</span><div class="phase-body"><h3>${ph.t}</h3><p>${ph.s}</p>
-      <div class="chips">${list.map(t=>`<span class="chip">${t.name} · ${t.all?"os três":PEOPLE[A[t.id]].name}</span>`).join("")}</div></div></div>`;}).join("");
+      <div class="chips">${list.map(t=>`<span class="chip">${t.name} · ${t.all?"os três":PEOPLE[FIXED[t.id]].name}</span>`).join("")}</div></div></div>`;}).join("");
   return `<section class="section">
-    <div class="code-pill sponge">Código do sorteio <b>${S.seed}</b> <span>Manda pros outros digitarem no celular deles.</span></div>
+    <div class="code-pill sponge">Sorteio fechado · código <b>${S.seed}</b> <span>A divisão não muda mais.</span></div>
     <div class="people">${people}</div>
-    <div class="panel"><h2>Ordem do serviço</h2><div class="phases">${phases}</div></div>
     <div class="panel">
-      <h3>Alguém reclamou do sorteio?</h3>
-      <p class="muted" style="margin:0">O sorteio foi justo. Mas se precisar mesmo refazer, o progresso dos cards some neste celular.</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">${confirmReset?`<button class="btn btn-warn" id="resetYes">Sim, refazer o sorteio</button><button class="btn btn-ghost" id="resetNo">Cancelar</button>`:`<button class="btn btn-ghost" id="resetBtn">Refazer sorteio</button>`}</div>
+      <h2>Como ganhar dinheiro</h2>
+      <ul class="rules">
+        <li><b>Cada card feito</b> cai na sua carteira na hora. Tarefa que dá mais trabalho vale mais.</li>
+        <li><b>Terminou uma tarefa inteira?</b> Mais ${brl(cents(BONUS_TAREFA))} de bônus.</li>
+        <li><b>Sobe de nível</b> conforme avança: de ${LEVELS[0][1]} até ${LEVELS[LEVELS.length-1][1]}.</li>
+        <li><b>No final</b>, o Tio Pira faz a vistoria no seu celular. Aprovou, o dinheiro é seu e o lanche está garantido.</li>
+      </ul>
     </div>
+    <div class="chest-big"><span class="chest-ico sponge" aria-hidden="true">?</span><div><span class="eyebrow">Prêmio final da equipe</span><h2>Lanche do Tio Pira</h2><p class="muted" style="margin:0">Liberado quando os três terminarem tudo, fizerem o Toque final juntos e passarem na vistoria. O que é? Só vai descobrindo pelas pistas na aba de cada um.</p></div></div>
+    <div class="panel"><h2>Ordem do serviço</h2><div class="phases">${phases}</div></div>
   </section>`;
 }
 
 function renderPerson(p){
-  const A=assign(), P=PEOPLE[p];
-  const l=tasksOf(p,A);
-  const head=`<div class="person-head">${avatar(p)}<div class="txt"><h2>${P.name}</h2><span class="muted">${A?`Uns ${mins(l)} min de serviço · ${l.length} tarefas · ${pct(l)}% feito`:"Sorteio ainda não foi feito"}</span></div></div>
-    ${A?`<div class="bar"><i style="width:${pct(l)}%"></i></div>`:""}`;
-  let body;
-  if(!A){
-    body=`${l.length?`<div class="tasks">${l.map(t=>taskCard(t,null)).join("")}</div>`:""}
-      <div class="empty"><h3>${l.length?"O resto ainda vai ser sorteado":"Suas tarefas ainda não foram sorteadas"}</h3><p class="muted" style="margin:0">Faz o sorteio na aba Plano ou digita o código que alguém já sorteou.</p><button class="btn btn-dark" data-view="plano">Ir pro sorteio</button></div>`;
-  }else{
-    body=`<div class="tasks">${l.map(t=>taskCard(t,A)).join("")}</div>`;
-  }
-  return `<section class="section">${head}${body}
-    <div class="section" style="margin-top:8px"><h3>No fim, os três juntos</h3><div class="tasks">${taskCard(FINAL,A)}</div></div></section>`;
+  const P=PEOPLE[p], l=tasksOf(p), pc=pct(l), lv=level(pc);
+  const nextTxt=lv.next?`Faltam ${lv.next[0]-pc}% pra virar <b>${lv.next[1]}</b>`:"Nível máximo. Respeito.";
+  return `<section class="section">
+    <div class="person-head">${avatar(p)}<div class="txt"><h2>${P.name}</h2><span class="muted">Uns ${mins(l)} min de serviço · ${l.length} tarefas</span></div></div>
+    <div class="wallet sponge">
+      <span class="wlabel">Carteira de ${P.name}</span>
+      <span class="amt" id="amt-${p}">${brl(earned(p))}</span>
+      <span class="wsub">de até ${brl(maxOf(p))} · ${S.approved[p]?"liberado pelo Tio Pira ✓":"a receber depois da vistoria"}</span>
+      <span class="wbar"><i style="width:${pc}%"></i></span>
+      <span class="wlvl"><span class="lvl">Nível ${lv.i+1}: ${lv.name}</span><span>${nextTxt}</span></span>
+    </div>
+    <div class="tasks">${l.map(t=>taskCard(t)).join("")}</div>
+    <div class="section" style="margin-top:6px"><h3>No fim, os três juntos</h3><div class="tasks">${taskCard(FINAL)}</div></div>
+    ${chest(p)}
+    ${vistoriaPanel(p)}
+  </section>`;
 }
 
 function renderRooms(){
-  const A=assign();
   const groups=Object.keys(ROOMS).map(r=>{
     const list=ALL.filter(t=>t.room===r);
     return `<div class="room-group"><h3>${ROOMS[r]}</h3><div class="room-list">${list.map(t=>{
       const d=doneArr(t.id).length,n=t.steps.length;
-      const who=t.all?`<span class="tagname">Os três</span>`:(A?nameTag(A[t.id]):(t.fixed?nameTag(t.fixed):`<span class="tagname muted">Sorteio</span>`));
-      return `<button class="room-item" data-open="${t.id}"><span class="l"><b>${t.name}</b><span>${d}/${n} passos · fase ${t.phase}</span></span>${who}</button>`;}).join("")}</div></div>`;}).join("");
-  return `<section class="section">${A?"":`<div class="warnbox">Sorteio ainda não foi feito. Só a louça da Mariah já tem dono.</div>`}${groups}</section>`;
+      const who=t.all?`<span class="tagname">Os três</span>`:nameTag(FIXED[t.id]);
+      return `<button class="room-item" data-open="${t.id}"><span class="l"><b>${t.name}</b><span>${d}/${n} cards · ${t.all?"libera o lanche":"vale até "+brl(maxTask(t))}</span></span>${who}</button>`;}).join("")}</div></div>`;}).join("");
+  return `<section class="section">${groups}</section>`;
 }
 
 function render(){
   renderTabs();
-  let h="";
-  if(view==="plano") h=renderPlano();
-  else if(view==="comodos") h=renderRooms();
-  else h=renderPerson(view);
+  let h=newsBanner();
+  if(view==="plano") h+=renderPlano();
+  else if(view==="comodos") h+=renderRooms();
+  else h+=renderPerson(view);
   $("#view").innerHTML=h;
 }
 
-/* ---------- animação do sorteio ---------- */
-function startDraw(){
-  const seed=1000+Math.floor(Math.random()*9000);
-  const A=computeAssign(seed);
-  rolling=true; render();
-  const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const order=["secar","organizar","sala","banheiro","mesa","chao"];
-  const settled={lavar:true};
-  const pool={secar:["kaue","ayron"]};
-  const iv=setInterval(()=>{
-    order.forEach(id=>{ if(settled[id]) return; const el=document.querySelector(`[data-slot="${id}"]`); if(!el) return;
-      const opts=pool[id]||ORDER; const p=opts[Math.floor(Math.random()*opts.length)];
-      el.textContent=PEOPLE[p].name; el.style.color=PEOPLE[p].c; el.className="slot rolling";});
-  },70);
-  const base=reduce?100:900, step=reduce?60:450;
-  order.forEach((id,i)=>setTimeout(()=>{
-    settled[id]=true; const el=document.querySelector(`[data-slot="${id}"]`);
-    if(el){el.textContent=PEOPLE[A[id]].name;el.style.color=PEOPLE[A[id]].c;el.className="slot settled";}
-    if(i===order.length-1){ clearInterval(iv);
-      setTimeout(()=>{S.seed=seed;S.done={};save();rolling=false;render();},reduce?50:1100);}
-  },base+i*step));
-}
+/* ---------- efeitos ---------- */
+const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let actx=null;
+function ding(big){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const now=actx.currentTime;
+  const notes=big?[1046.5,1318.5,1568,2093]:[1318.5,1760];
+  notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),t0=now+i*0.07;o.type="triangle";o.frequency.value=f;
+    g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+0.28);
+    o.connect(g);g.connect(actx.destination);o.start(t0);o.stop(t0+0.3);});}catch(e){}}
+function floater(txt,big){const el=document.createElement("div");el.className="floater"+(big?" big":"");el.textContent=txt;document.body.appendChild(el);setTimeout(()=>el.remove(),1300);}
+function confetti(){ if(reduce) return; const cols=["var(--sponge)","var(--scrub)","var(--p-kaue)","var(--p-mariah)","var(--p-ayron)"];
+  for(let k=0;k<50;k++){const i=document.createElement("i");i.className="confetto";i.style.left=Math.random()*100+"vw";i.style.background=cols[k%cols.length];
+    i.style.animationDelay=(Math.random()*0.4)+"s";i.style.animationDuration=(1.2+Math.random()*0.9)+"s";document.body.appendChild(i);setTimeout(()=>i.remove(),2600);}}
 
 /* ---------- baralho de flash cards ---------- */
 let deck={id:null,i:0,fin:false};
-const FIN_MSG=["Pronto. Viu? Ninguém morreu.","Acabou. Pode voltar a respirar.","Feito. A visita agradece, mesmo sem saber.","Terminou. Agora vai ver se alguém precisa de ajuda."];
+const FIN_MSG=["Pronto. Viu? Ninguém morreu.","Acabou. E ainda ganhou dinheiro.","Feito. A visita agradece, mesmo sem saber.","Terminou. Agora vai ver se alguém precisa de ajuda."];
 function openDeck(id){
   const t=BY[id]; const d=doneArr(id);
   let i=0; while(i<t.steps.length&&d.includes(i)) i++;
@@ -462,47 +516,59 @@ function openDeck(id){
 }
 function closeDeck(){$("#deck").hidden=true;document.body.style.overflow="";render();}
 function renderDeck(){
-  const t=BY[deck.id], A=assign(), n=t.steps.length, d=doneArr(t.id);
-  const who=t.all?"Os três juntos":(A?PEOPLE[A[t.id]].name:(t.fixed?PEOPLE[t.fixed].name:"Ainda não sorteado"));
+  const t=BY[deck.id], n=t.steps.length, d=doneArr(t.id);
+  const owner=t.all?null:FIXED[t.id];
+  const who=t.all?"Os três juntos":PEOPLE[owner].name;
   const dots=t.steps.map((_,k)=>`<i class="${d.includes(k)?"ok":""}${!deck.fin&&k===deck.i?" cur":""}"></i>`).join("");
+  const wallet=owner?`<span class="wchip sponge" id="deckWallet">${brl(earned(owner))}</span>`:"";
   let card,ctrl;
   if(deck.fin){
-    card=`<div class="fcard"><div class="top-band sponge"></div><div class="content finish fade-in"><span class="stepno">${n} de ${n} passos</span><h2>${FIN_MSG[Math.floor(Math.random()*FIN_MSG.length)]}</h2><p>${t.name}: concluído.</p></div></div>`;
+    card=`<div class="fcard"><div class="top-band sponge"></div><div class="content finish fade-in"><span class="stepno">${n} de ${n} cards</span><h2>${FIN_MSG[Math.floor(Math.random()*FIN_MSG.length)]}</h2>
+      <p>${t.name}: concluído.${owner?` ${PEOPLE[owner].name} ganhou <b>${brl(earnedTask(t))}</b> nessa tarefa, com bônus.`:" Mais um passo pro Lanche do Tio Pira."}</p></div></div>`;
     ctrl=`<button class="btn btn-ghost" id="dRestart">Rever do início</button><button class="btn btn-main sponge" id="dClose2">Voltar pra lista</button>`;
   }else{
-    const s=t.steps[deck.i];
+    const s=t.steps[deck.i], already=d.includes(deck.i);
+    const val=owner?`<span class="cardval sponge">${already?"Já ganhou ":"Este card vale "}${brl(stepC(t,deck.i))}</span>`:`<span class="cardval team">Missão da equipe</span>`;
     card=`<div class="fcard" id="fcard"><div class="top-band sponge"></div><div class="content fade-in">
-      <span class="stepno">Passo ${deck.i+1} de ${n}</span>
+      <span class="steprow"><span class="stepno">Card ${deck.i+1} de ${n}</span>${val}</span>
       <h2>${s.t}</h2><p>${s.b}</p>
       ${s.d?`<div class="tip"><b>Presta atenção</b>${s.d}</div>`:""}
-      ${d.includes(deck.i)?`<span class="checked">✓ Já marcado como feito</span>`:""}
+      ${already?`<span class="checked">✓ Já marcado como feito</span>`:""}
+      ${deck.i===n-1&&owner&&!isFull(t)?`<span class="bonusnote">Último card: terminando, ganha mais ${brl(cents(BONUS_TAREFA))} de bônus.</span>`:""}
     </div></div>`;
     ctrl=`<button class="btn btn-ghost" id="dPrev" ${deck.i===0?"disabled":""}>← Voltar</button><button class="btn btn-main sponge" id="dNext">${deck.i===n-1?"Feito, terminei":"Feito, próximo →"}</button>`;
   }
-  $("#deckWrap").innerHTML=`<div class="deck-top"><div class="t"><b>${t.name}</b><span>${who} · ${ROOMS[t.room]}</span></div><button class="x" id="dClose" aria-label="Fechar">×</button></div>
+  $("#deckWrap").innerHTML=`<div class="deck-top"><div class="t"><b>${t.name}</b><span>${who} · ${ROOMS[t.room]}</span></div>${wallet}<button class="x" id="dClose" aria-label="Fechar">×</button></div>
     <div class="dots" aria-hidden="true">${dots}</div>${card}<div class="deck-ctrl">${ctrl}</div><div class="swipe-hint">Dá pra arrastar o card pro lado</div>`;
 }
-function next(){ if(deck.fin) return; const t=BY[deck.id]; const d=doneArr(t.id);
-  if(!d.includes(deck.i)){d.push(deck.i);S.done[t.id]=d;save();}
+function next(){ if(deck.fin) return; const t=BY[deck.id]; const d=doneArr(t.id); const owner=t.all?null:FIXED[t.id];
+  const wasFull=isFull(t);
+  if(!d.includes(deck.i)){
+    d.push(deck.i);S.done[t.id]=d;save();
+    if(owner){floater("+"+brl(stepC(t,deck.i)));ding(false);} else ding(false);
+    if(!wasFull&&isFull(t)){ setTimeout(()=>{ if(owner) floater("BÔNUS +"+brl(cents(BONUS_TAREFA)),true); ding(true); confetti(); },450); }
+  }
   if(deck.i<t.steps.length-1) deck.i++; else deck.fin=true; renderDeck();}
 function prev(){ if(deck.fin){deck.fin=false;deck.i=BY[deck.id].steps.length-1;} else if(deck.i>0) deck.i--; renderDeck();}
 
 /* ---------- eventos ---------- */
 document.addEventListener("click",e=>{
-  const v=e.target.closest("[data-view]"); if(v){view=v.dataset.view;confirmReset=false;codeErr="";S.me=PEOPLE[view]?view:S.me;save();render();window.scrollTo(0,0);return;}
+  const v=e.target.closest("[data-view]"); if(v){view=v.dataset.view;vistoria=null;pinErr="";if(PEOPLE[view]){S.me=view;save();}render();window.scrollTo(0,0);return;}
   const o=e.target.closest("[data-open]"); if(o){openDeck(o.dataset.open);return;}
-  const id=e.target.closest("button")&&e.target.closest("button").id;
-  if(id==="drawBtn") startDraw();
-  else if(id==="codeBtn"){const v2=($("#codeIn").value||"").trim(); if(/^\d{4}$/.test(v2)&&+v2>=1000){S.seed=+v2;S.done={};codeErr="";save();render();} else {codeErr="O código tem 4 números, tipo 4821. Confere no outro celular.";render();}}
-  else if(id==="resetBtn"){confirmReset=true;render();}
-  else if(id==="resetNo"){confirmReset=false;render();}
-  else if(id==="resetYes"){S.seed=null;S.done={};confirmReset=false;save();render();}
+  const b=e.target.closest("button"); const id=b&&b.id;
+  if(id==="newsOk"){S.seenNews=true;save();render();}
+  else if(id==="vOpen"){vistoria=b.dataset.p;pinErr="";render();setTimeout(()=>{const i=$("#pinIn");if(i)i.focus();},50);}
+  else if(id==="pinNo"){vistoria=null;pinErr="";render();}
+  else if(id==="pinOk"){const p=b.dataset.p;const val=($("#pinIn").value||"").trim().toLowerCase();
+    if(hash(val)===PIN_HASH){S.approved[p]=true;save();vistoria=null;pinErr="";render();ding(true);confetti();floater("APROVADO",true);}
+    else{pinErr="Senha errada. Só o Tio Pira sabe a senha.";render();}}
   else if(id==="dClose"||id==="dClose2") closeDeck();
   else if(id==="dNext") next();
   else if(id==="dPrev") prev();
-  else if(id==="dRestart"){delete S.done[deck.id];save();deck.fin=false;deck.i=0;renderDeck();}
+  else if(id==="dRestart"){deck.fin=false;deck.i=0;renderDeck();}
 });
 document.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&e.target&&e.target.id==="pinIn"){const b=$("#pinOk");if(b)b.click();return;}
   if($("#deck").hidden) return;
   if(e.key==="ArrowRight") next(); else if(e.key==="ArrowLeft") prev(); else if(e.key==="Escape") closeDeck();
 });
@@ -511,7 +577,7 @@ $("#deck").addEventListener("touchstart",e=>{tx=e.touches[0].clientX;ty=e.touche
 $("#deck").addEventListener("touchend",e=>{ if(tx===null) return; const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty; tx=null;
   if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){ if(dx<0) next(); else prev(); }},{passive:true});
 
-if(S.seed&&S.me&&PEOPLE[S.me]) view=S.me;
+if(S.me&&PEOPLE[S.me]) view=S.me;
 render();
 })();
 </script>
