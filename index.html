@@ -2,716 +2,704 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F4C63D">
-<title>Operação Visita</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1E1712">
+<title>Run do Tio Pira</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@500;600;700;800&display=swap">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
-/* Layout: uma coluna de app; abas no topo; tarefas viram baralhos de flash cards com cara de esponja (amarelo + faixa verde) */
+/* Visual único: corredor de madeira à noite, HUD amarelo-esponja. Tela cheia de jogo com painéis por cima. */
 :root{
-  --bg:#F2F4EF; --surface:#FFFFFF; --sunken:#E7EBE4; --ink:#1C2820; --muted:#5D6B62; --line:#D7DED4;
-  --sponge:#F4C63D; --sponge-pore:#DDA91D; --sponge-ink:#2A2208; --scrub:#2D6A45; --scrub-ink:#FFFFFF;
-  --p-kaue:#2B67C9; --p-mariah:#B8336F; --p-ayron:#C9661A; --warn-bg:#FFF1E6; --warn-ink:#8A3B0A;
+  --bg:#1E1712; --panel:#2A211A; --panel2:#352A21; --ink:#F6EEE4; --muted:#BFAE9C; --line:#4A3B2E;
+  --sponge:#F4C63D; --sponge-ink:#2A2208; --scrub:#3E9A63; --danger:#E0533D;
+  --kaue:#3C7BE0; --mariah:#D2457F; --ayron:#E07C26;
   --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
   --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --r:16px;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#111813; --surface:#1A241D; --sunken:#151D17; --ink:#E8EEE7; --muted:#9BAAA0; --line:#2A382F;
-  --sponge:#F0C447; --sponge-pore:#C9971A; --sponge-ink:#231C05; --scrub:#62B582; --scrub-ink:#0D1610;
-  --p-kaue:#7FA8F0; --p-mariah:#EE80B0; --p-ayron:#F0A35E; --warn-bg:#2E1E12; --warn-ink:#F6BE92; color-scheme:dark } }
-:root[data-theme="dark"]{
-  --bg:#111813; --surface:#1A241D; --sunken:#151D17; --ink:#E8EEE7; --muted:#9BAAA0; --line:#2A382F;
-  --sponge:#F0C447; --sponge-pore:#C9971A; --sponge-ink:#231C05; --scrub:#62B582; --scrub-ink:#0D1610;
-  --p-kaue:#7FA8F0; --p-mariah:#EE80B0; --p-ayron:#F0A35E; --warn-bg:#2E1E12; --warn-ink:#F6BE92; color-scheme:dark }
-
 *{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);overflow:hidden;overscroll-behavior:none}
 [hidden]{display:none!important}
-body{margin:0;-webkit-text-size-adjust:100%}
-img{max-width:100%}
-:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html,body{background:var(--bg)}
-body{color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
-button{font:inherit;color:inherit;cursor:pointer}
-button:focus-visible,input:focus-visible{outline:3px solid var(--scrub);outline-offset:2px}
-.app{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 72px;display:flex;flex-direction:column;gap:20px}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sponge);outline-offset:2px}
+#app{position:fixed;inset:0;display:grid;place-items:center;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+#cv{display:block;touch-action:none;border-radius:6px}
 
-.top{display:flex;flex-direction:column;gap:6px}
-.eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--scrub)}
-h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,56px);line-height:1;margin:0;letter-spacing:-.02em;text-wrap:balance}
-.top p{margin:0;color:var(--muted);max-width:60ch}
+#hud{position:absolute;left:0;right:0;top:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;padding-top:calc(env(safe-area-inset-top,0px) + 10px)}
+.hud-in{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;padding:0 12px}
+.hchip{background:rgba(20,15,11,.78);border:1px solid var(--line);border-radius:12px;padding:6px 10px;font-weight:800;font-variant-numeric:tabular-nums;font-size:15px;display:flex;align-items:center;gap:6px}
+.hchip.big{font-family:var(--display);font-size:20px}
+.hchip.coin{color:var(--sponge)}
+.hchip .d{width:9px;height:9px;border-radius:50%}
+.hchip.out{opacity:.5;text-decoration:line-through}
+.warn{margin-top:8px;background:var(--danger);color:#fff;font-weight:800;border-radius:10px;padding:5px 12px;font-size:14px;animation:blink .5s steps(2) infinite}
+@keyframes blink{50%{opacity:.55}}
 
-.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}
-.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
-
-h2{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.15;margin:0;text-wrap:balance}
-h3{font-family:var(--display);font-weight:700;font-size:18px;margin:0}
+.screen{position:absolute;inset:0;display:grid;place-items:center;padding:16px;background:rgba(20,15,11,.72);overflow-y:auto}
+.card{width:min(440px,100%);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 20px 50px -20px rgba(0,0,0,.6)}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sponge)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,11vw,58px);line-height:.95;margin:0;letter-spacing:-.02em}
+h1 span{color:var(--sponge)}
+h2{font-family:var(--display);font-weight:800;font-size:28px;line-height:1.05;margin:0}
+p{margin:0;line-height:1.45}
 .muted{color:var(--muted)}
-.section{display:flex;flex-direction:column;gap:12px}
-
-/* sponge texture */
-.sponge{background-color:var(--sponge);background-image:radial-gradient(circle at 30% 40%,var(--sponge-pore) 1.6px,transparent 2.2px),radial-gradient(circle at 70% 70%,var(--sponge-pore) 1.1px,transparent 1.8px);background-size:14px 14px,10px 10px;color:var(--sponge-ink)}
-
-.btn{border:0;border-radius:14px;padding:13px 20px;font-weight:700;font-size:16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px}
-.btn-main{box-shadow:inset 0 -5px 0 var(--scrub)}
+.chars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.char{border:2px solid var(--line);background:var(--panel2);border-radius:16px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:800}
+.char .av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:22px;color:#fff}
+.char[aria-pressed="true"]{border-color:var(--sponge);background:#3E3122}
+.char:disabled{opacity:.35;cursor:not-allowed}
+.char small{font-weight:600;color:var(--muted);font-size:12px}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:16px;min-height:50px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-main{background:var(--sponge);color:var(--sponge-ink);box-shadow:inset 0 -5px 0 var(--scrub)}
 .btn-main:active{transform:translateY(1px)}
-.btn-dark{background:var(--ink);color:var(--bg)}
 .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
-.btn-warn{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-ink)}
-
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px}
-.rules{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
-.rules li{max-width:65ch}
-
-.draw-table{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
-.draw-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
-.draw-row:first-child{border-top:0}
-.draw-row .tname{font-weight:600;min-width:0}
-.draw-row .tsub{font-size:13px;color:var(--muted)}
-.slot{font-family:var(--display);font-weight:700;font-size:18px;min-width:84px;text-align:right}
-.slot.rolling{opacity:.55}
-.slot.settled{animation:pop .35s ease-out}
-@keyframes pop{0%{transform:scale(1.25)}100%{transform:scale(1)}}
-
-.code-box{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.code-box input{width:120px;font:700 22px/1 var(--display);letter-spacing:.2em;text-align:center;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);color:var(--ink)}
-.code-pill{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;font-weight:600;flex-wrap:wrap}
-.code-pill b{font-family:var(--display);font-size:26px;letter-spacing:.15em}
-
-.people{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-@media (max-width:720px){.people{grid-template-columns:1fr}}
-.pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;text-align:left}
-.pcard-head{display:flex;align-items:center;gap:10px}
-.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:18px;color:var(--surface);flex:0 0 auto}
-.pcard .who{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.1}
-.pcard .mins{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--sunken);border:1px solid var(--line)}
-.bar{height:8px;border-radius:99px;background:var(--sunken);overflow:hidden;border:1px solid var(--line)}
-.bar i{display:block;height:100%;background:var(--scrub);border-radius:99px;transition:width .3s}
-
-.phases{display:flex;flex-direction:column;gap:0}
-.phase{display:grid;grid-template-columns:44px 1fr;gap:14px;padding-bottom:18px;position:relative}
-.phase:not(:last-child)::before{content:"";position:absolute;left:21px;top:44px;bottom:0;width:2px;background:var(--line)}
-.phase-n{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:20px}
-.phase-body{display:flex;flex-direction:column;gap:6px;min-width:0;padding-top:4px}
-.phase-body p{margin:0;color:var(--muted);font-size:14px}
-
-.tasks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-@media (max-width:640px){.tasks{grid-template-columns:1fr}}
-.task{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0;text-align:left;display:flex;flex-direction:column;overflow:hidden}
-.task:hover{border-color:var(--muted)}
-.task .stripe{height:12px;border-bottom:4px solid var(--scrub)}
-.task .inner{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px}
-.task .room{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.task strong{font-family:var(--display);font-size:21px;line-height:1.15}
-.task .meta{font-size:14px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.task .open{font-weight:700;color:var(--scrub)}
-.task.done .stripe{background:var(--scrub);background-image:none}
-
-.person-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.person-head .avatar{width:56px;height:56px;font-size:26px}
-.person-head .txt{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
-.empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
-
-.room-group{display:flex;flex-direction:column;gap:10px}
-.room-list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.room-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left}
-.room-item:first-child{border-top:0}
-.room-item .l{display:flex;flex-direction:column;min-width:0}
-.room-item .l span{font-size:13px;color:var(--muted)}
-.tagname{font-weight:700;display:flex;align-items:center;gap:6px;flex:0 0 auto}
-
-.warnbox{background:var(--warn-bg);color:var(--warn-ink);border-radius:12px;padding:12px 14px;font-size:14px;font-weight:500}
-
-/* deck */
-.deck{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-.deck-wrap{flex:1;display:flex;flex-direction:column;gap:14px;width:100%;max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 18px;min-height:0}
-.deck-top{display:flex;align-items:center;gap:12px}
-.deck-top .t{flex:1;min-width:0}
-.deck-top .t b{font-family:var(--display);font-size:19px;display:block;line-height:1.15}
-.deck-top .t span{font-size:13px;color:var(--muted)}
-.x{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:22px;line-height:1;flex:0 0 auto}
-.dots{display:flex;gap:5px;flex-wrap:wrap}
-.dots i{flex:1 1 10px;min-width:8px;height:6px;border-radius:99px;background:var(--line)}
-.dots i.ok{background:var(--scrub)}
-.dots i.cur{background:var(--sponge-pore)}
-.fcard{flex:1;min-height:0;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 30px -18px rgba(0,0,0,.35)}
-.fcard .top-band{height:30px;border-bottom:6px solid var(--scrub);flex:0 0 auto}
-.fcard .content{padding:22px 22px 24px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
-.fcard .stepno{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.fcard h2{font-size:clamp(28px,6vw,38px);letter-spacing:-.01em}
-.fcard p{margin:0;font-size:18px;line-height:1.55;max-width:60ch}
-.tip{background:var(--sunken);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px}
-.tip b{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--scrub);margin-bottom:2px}
-.fcard .checked{font-size:14px;font-weight:700;color:var(--scrub)}
-.deck-ctrl{display:grid;grid-template-columns:1fr 2fr;gap:10px}
-.deck-ctrl .btn{width:100%}
-.finish{align-items:flex-start;justify-content:center}
-.swipe-hint{font-size:12px;color:var(--muted);text-align:center}
-.fade-in{animation:fin .25s ease-out}
-@keyframes fin{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-
-/* ---------- gamificação ---------- */
-.tabmoney{font-size:12px;font-weight:700;opacity:.75;font-variant-numeric:tabular-nums}
-.news{display:flex;gap:14px;align-items:flex-start;padding:18px;border-radius:var(--r);border:2px solid var(--scrub);background:var(--surface);margin-bottom:20px}
-.newbadge{flex:0 0 auto;font-family:var(--display);font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.08em;padding:6px 10px;border-radius:10px;box-shadow:inset 0 -3px 0 var(--scrub)}
-.newsbody{display:flex;flex-direction:column;gap:10px;align-items:flex-start;min-width:0}
-.newsbody p{margin:0;max-width:62ch}
-.pmoney{font-family:var(--display);font-weight:800;font-size:30px;line-height:1;font-variant-numeric:tabular-nums;color:var(--scrub)}
-.pmoney small{font-family:var(--body);font-size:13px;font-weight:600;color:var(--muted)}
-.wallet{border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:8px;box-shadow:inset 0 -8px 0 var(--scrub)}
-.wlabel{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
-.amt{font-family:var(--display);font-weight:800;font-size:clamp(46px,12vw,72px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.amt.bump{animation:bump .5s ease-out}
-@keyframes bump{30%{transform:scale(1.08)}}
-.wsub{font-weight:600;font-size:14px}
-.wbar{height:12px;border-radius:99px;background:rgba(42,34,8,.15);overflow:hidden;margin-bottom:6px}
-.wbar i{display:block;height:100%;background:var(--sponge-ink);border-radius:99px}
-.wlvl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;font-size:14px}
-.lvl{font-weight:800;background:var(--sponge-ink);color:var(--sponge);padding:5px 10px;border-radius:999px;font-size:13px}
-.taskrow,.steprow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.valtag,.cardval{font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.cardval{font-size:14px;padding:6px 12px}
-.valtag.team,.cardval.team{background:var(--scrub);color:var(--scrub-ink)}
-.bonusnote{font-weight:700;color:var(--scrub);font-size:15px}
-.wchip{font-family:var(--display);font-weight:800;padding:8px 12px;border-radius:12px;font-variant-numeric:tabular-nums;flex:0 0 auto}
-.chest,.chest-big{background:var(--surface);border:2px dashed var(--sponge-pore);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px}
-.chest-big{flex-direction:row;align-items:center;gap:16px}
-.chest-head{display:flex;align-items:center;gap:14px}
-.chest-ico{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:32px;flex:0 0 auto;box-shadow:inset 0 -6px 0 var(--scrub);animation:wiggle 3.5s ease-in-out infinite}
-@keyframes wiggle{0%,86%,100%{transform:rotate(0)}89%{transform:rotate(-8deg)}92%{transform:rotate(7deg)}95%{transform:rotate(-4deg)}}
-.teasers{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.teasers li{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--sunken);border:1px solid var(--line)}
-.teasers .lk{flex:0 0 auto;min-width:48px;text-align:center;font-weight:800;font-size:13px;padding:4px 8px;border-radius:8px;background:var(--line);font-variant-numeric:tabular-nums}
-.teasers li.locked span:last-child{color:var(--muted);filter:blur(.3px)}
-.teasers li.open{border-color:var(--scrub)}
-.teasers li.open .lk{background:var(--scrub);color:var(--scrub-ink)}
-.teasers li.open span:last-child{font-weight:700}
-.approved{border:2px solid var(--scrub);position:relative;overflow:hidden}
-.stamp{align-self:flex-start;font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--scrub);border:3px solid var(--scrub);border-radius:8px;padding:4px 10px;transform:rotate(-4deg)}
-.floater{position:fixed;left:50%;top:38%;z-index:70;pointer-events:none;font-family:var(--display);font-weight:800;font-size:40px;color:var(--scrub);background:var(--surface);padding:6px 16px;border-radius:14px;border:2px solid var(--scrub);font-variant-numeric:tabular-nums;white-space:nowrap;animation:floatup 1.2s ease-out forwards}
-.floater.big{font-size:32px;top:30%;color:var(--sponge-ink);background:var(--sponge);border-color:var(--sponge-pore)}
-@keyframes floatup{0%{opacity:0;transform:translate(-50%,16px) scale(.8)}15%{opacity:1;transform:translate(-50%,0) scale(1.1)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-90px) scale(1)}}
-.confetto{position:fixed;top:-16px;width:9px;height:15px;z-index:65;border-radius:2px;pointer-events:none;animation:fall 1.6s linear forwards}
-@keyframes fall{to{transform:translateY(110vh) rotate(620deg)}}
-@media (max-width:560px){.chest-big{flex-direction:column;align-items:flex-start}.news{flex-direction:column}}
-
-.fine{margin:0;font-size:12px;color:var(--muted)}
-.receipt{background:var(--sunken);border:1px dashed var(--line);border-radius:6px;padding:14px;font-family:ui-monospace,"Courier New",monospace;font-size:13px;display:flex;flex-direction:column;gap:6px}
-.rhead{font-weight:800;letter-spacing:.06em;border-bottom:1px dashed var(--line);padding-bottom:8px}
-.rrow{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
-.rrow span{min-width:0}
-.rrow b{white-space:nowrap}
-.rrow.total{border-top:1px dashed var(--line);padding-top:6px;font-size:14px}
-.rfoot{border-top:1px dashed var(--line);padding-top:8px;color:var(--muted);font-family:var(--body)}
-.saquemsg{font-weight:700;color:var(--warn-ink);min-height:1.5em}
-
-.wheel-wrap{position:relative;width:min(320px,100%);margin:6px auto 0;aspect-ratio:1;max-width:100%}
-.wheel-wrap svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 14px rgba(0,0,0,.25))}
-.wheel{transform-origin:0 0}
-.pointer{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--warn-ink);z-index:2}
-.spin-ctrl{display:flex;justify-content:center}
-.spin-result{text-align:center;display:flex;flex-direction:column;gap:4px;min-height:1px}
-.spin-result b{font-family:var(--display);font-weight:800;font-size:clamp(30px,8vw,44px);color:var(--warn-ink);letter-spacing:-.01em}
-.spin-result.show{animation:shake .6s ease-out}
-@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
-
-.votemsg{font-weight:700;min-height:1.5em}
-.vale{display:flex;flex-direction:column;gap:12px;align-items:stretch}
-.vale-title{font-size:clamp(40px,11vw,60px);color:var(--scrub);letter-spacing:-.02em;transform:rotate(-2deg);align-self:flex-start}
-.ticket{position:relative;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;box-shadow:inset 0 -6px 0 var(--scrub);
-  -webkit-mask:radial-gradient(circle 10px at 0 50%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 10px at 100% 50%,transparent 98%,#000) right/51% 100% no-repeat;
-          mask:radial-gradient(circle 10px at 0 50%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 10px at 100% 50%,transparent 98%,#000) right/51% 100% no-repeat}
-.t-eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
-.t-big{font-family:var(--display);font-weight:800;font-size:clamp(30px,8vw,40px);line-height:1;border-bottom:2px dashed var(--sponge-ink);padding-bottom:10px}
-.t-row{display:flex;justify-content:space-between;gap:12px;font-size:14px}
-.t-row b{text-align:right}
-.vale-cta{margin:0;font-weight:800;font-size:17px;color:var(--warn-ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row > *{flex:1 1 140px}
+.join{display:flex;gap:10px}
+.join input{width:110px;flex:0 0 auto;text-align:center;font:800 22px/1 var(--display);letter-spacing:.2em;border-radius:14px;border:1px solid var(--line);background:var(--bg);padding:10px}
+.join .btn{flex:1}
+.err{background:#3A1A14;color:#FFB3A3;border-radius:12px;padding:10px 12px;font-weight:600;font-size:14px}
+.code{font-family:var(--display);font-weight:800;font-size:56px;letter-spacing:.14em;color:var(--sponge);line-height:1}
+.plist{display:flex;flex-direction:column;gap:8px}
+.pl{display:flex;align-items:center;gap:10px;background:var(--panel2);border-radius:12px;padding:10px 12px;font-weight:700}
+.pl .av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--display)}
+.pl .tag{margin-left:auto;font-size:12px;color:var(--muted);font-weight:700}
+.howto{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px;align-items:center}
+.howto b{font-family:var(--display);color:var(--sponge);font-size:16px;text-align:center}
+.rank{display:flex;flex-direction:column;gap:8px}
+.rk{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;background:var(--panel2);border-radius:12px;padding:10px 12px}
+.rk .pos{font-family:var(--display);font-weight:800;font-size:22px;color:var(--sponge)}
+.rk .nm{font-weight:800}
+.rk .nm small{display:block;font-weight:600;color:var(--muted);font-size:12px}
+.rk .sc{font-family:var(--display);font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.rk .sc small{display:block;font-family:var(--body);font-size:12px;color:var(--sponge)}
+#count{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-family:var(--display);font-weight:800;font-size:110px;color:var(--sponge);text-shadow:0 6px 0 var(--scrub),0 10px 30px rgba(0,0,0,.6)}
+.pop{animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(1.6);opacity:0}100%{transform:scale(1);opacity:1}}
+.small{font-size:13px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
 <body>
+<div id="app">
+  <canvas id="cv" aria-label="Corredor da casa com os corredores fugindo do Tio Pira"></canvas>
 
-<div class="app">
-  <header class="top">
-    <span class="eyebrow">Hoje à noite tem visita</span>
-    <h1>Operação Visita</h1>
-    <p>Manual da faxina pra quem acha que a louça se lava sozinha. Kauê, Mariah e Ayron: larguem o celular. Quer dizer, usem o celular só pra ler isto aqui.</p>
-  </header>
-  <nav class="tabs" id="tabs" role="tablist"></nav>
-  <main id="view"></main>
-</div>
+  <div id="hud" hidden>
+    <div class="hud-in" id="hudTop"></div>
+    <div id="hudWarn"></div>
+  </div>
+  <div id="count" hidden></div>
 
-<div class="deck" id="deck" hidden>
-  <div class="deck-wrap" id="deckWrap"></div>
+  <div class="screen" id="menu">
+    <div class="card">
+      <span class="eyebrow">Kauê · Mariah · Ayron</span>
+      <h1>Run do <span>Tio Pira</span></h1>
+      <p class="muted">O Tio Pira achou poeira atrás do sofá e quer todo mundo de volta na faxina. Corre.</p>
+      <div>
+        <p style="font-weight:800;margin-bottom:8px">Quem é você?</p>
+        <div class="chars" id="menuChars"></div>
+      </div>
+      <button class="btn btn-main" id="btnCreate">Criar sala online</button>
+      <div class="join"><input id="joinCode" inputmode="numeric" maxlength="4" placeholder="0000" aria-label="Código da sala"><button class="btn btn-ghost" id="btnJoin">Entrar na sala</button></div>
+      <div id="menuErr"></div>
+      <button class="btn btn-ghost" id="btnSolo">Treinar sozinho</button>
+      <div class="howto">
+        <b>← →</b><span>Arrasta pro lado: troca de pista</span>
+        <b>↑</b><span>Arrasta pra cima: pula o balde</span>
+        <b>↓</b><span>Arrasta pra baixo: passa por baixo do varal</span>
+        <b>✕</b><span>Sofá não dá pra pular. Desvia.</span>
+      </div>
+      <p class="small muted">Tropeçou uma vez, o Tio Pira cola em você. Tropeçou de novo antes de ele cansar, ou bateu no sofá: pego. No computador, use as setas ou W A S D.</p>
+    </div>
+  </div>
+
+  <div class="screen" id="lobby" hidden>
+    <div class="card">
+      <span class="eyebrow" id="lobbyRole">Sala online</span>
+      <div><p class="muted small">Código da sala</p><div class="code" id="lobbyCode">----</div></div>
+      <p class="muted" id="lobbyHint">Manda esse código pros outros. Eles abrem o jogo e tocam em “Entrar na sala”.</p>
+      <div class="plist" id="lobbyList"></div>
+      <div><p style="font-weight:800;margin-bottom:8px">Seu personagem</p><div class="chars" id="lobbyChars"></div></div>
+      <div id="lobbyErr"></div>
+      <div class="row"><button class="btn btn-main" id="btnStart">Começar corrida</button><button class="btn btn-ghost" id="btnLeave">Sair</button></div>
+    </div>
+  </div>
+
+  <div class="screen" id="over" hidden>
+    <div class="card">
+      <span class="eyebrow" id="overEyebrow">Fim da corrida</span>
+      <h2 id="overTitle">O Tio Pira te pegou!</h2>
+      <p class="muted" id="overSub"></p>
+      <div class="rank" id="overRank"></div>
+      <div class="row" id="overBtns"></div>
+    </div>
+  </div>
 </div>
 
 <script>
 (function(){
-const PEOPLE={kaue:{name:"Kauê",c:"var(--p-kaue)"},mariah:{name:"Mariah",c:"var(--p-mariah)"},ayron:{name:"Ayron",c:"var(--p-ayron)"}};
-const ORDER=["kaue","mariah","ayron"];
-const ROOMS={cozinha:"Cozinha",sala:"Sala",banheiro:"Banheiro",casa:"Casa toda"};
-const PHASES=[
-  {n:1,t:"Tirar a bagunça",s:"Antes de limpar, alguém tira as coisas do caminho. Ninguém limpa em cima de bagunça."},
-  {n:2,t:"Limpeza pesada",s:"Todo mundo ao mesmo tempo, cada um no seu canto. Sem ficar olhando o outro trabalhar."},
-  {n:3,t:"Chão",s:"Sempre por último. Se varrer antes, alguém sacode uma almofada e suja tudo de novo."},
-  {n:4,t:"Toque final",s:"Os três juntos, uns 15 minutos. É o que faz a diferença quando ela entrar."}
-];
+"use strict";
+/* ================= constantes ================= */
+const W=360,H=640,LANES=[90,180,270],PY=470,PX=20; /* PX = pixels por metro */
+const CHARS={kaue:{name:"Kauê",c:"#3C7BE0",hair:"#2B1D14"},mariah:{name:"Mariah",c:"#D2457F",hair:"#3A2016"},ayron:{name:"Ayron",c:"#E07C26",hair:"#1E1510"}};
+const CHAR_IDS=["kaue","mariah","ayron"];
+const PFX="run-tio-pira-v1-";
+const LOCAL=/[?&]local\b/.test(location.search);
 
-const TASKS=[
-{id:"organizar",name:"Organizar os itens pela casa",room:"casa",min:30,phase:1,steps:[
- {t:"Você começa primeiro",b:"Seu trabalho vem antes de todo mundo, porque ninguém consegue limpar em cima de bagunça. Começa já, enquanto os outros ainda estão procurando a vassoura."},
- {t:"Pega um cesto grande",b:"Um cesto, caixa ou sacola grande. Ele vai ser seu carrinho de coisas fora do lugar."},
- {t:"Passa cômodo por cômodo",b:"Entra em cada cômodo e recolhe tudo que não pertence a ele. Não arruma ainda, só recolhe. Começa pela entrada da casa: é a primeira coisa que ela vê."},
- {t:"Roupa",b:"Roupa suja vai pro cesto de roupa. Roupa limpa vai dobrada pro armário. Nada pendurado em cadeira, porta ou sofá. Toalha molhada vai pro varal, não pra cama."},
- {t:"Sapatos",b:"Todos em par, perto da porta ou na sapateira. Os que sobrarem vão pro quarto do dono. Chinelo de cabeça pra baixo no meio da sala não existe mais."},
- {t:"Coisas pequenas",b:"Carregador, chave, papel, carta, boné, fone. Cada um no seu lugar. Não sabe qual é o lugar? Uma gaveta ou caixa só pra isso, fechada.",d:"Boleto, remédio e papel de escola não ficam à vista. Gaveta."},
- {t:"Quartos",b:"Pelo menos os que dá pra ver do corredor: cama arrumada, lençol esticado, travesseiro no lugar, porta do armário fechada. Os outros quartos: porta fechada e pronto."},
- {t:"Lixo da casa toda",b:"Esvazia todas as lixeiras (menos a do banheiro, que é de quem pegou o banheiro), junta tudo num saco só e leva pra fora de casa. Coloca saco novo em cada lixeira."},
- {t:"Entrada da casa",b:"Tapete da porta sacudido, nada empilhado na entrada, cabideiro sem dez casacos. A primeira impressão acontece aqui, nos primeiros 3 segundos."},
- {t:"Esvazia o cesto",b:"Volta pelos cômodos devolvendo cada coisa do cesto pro lugar dela. Regra: o cesto termina vazio. Não vale jogar tudo num quarto e fechar a porta. (Tá, vale um quarto. Só um.)"},
- {t:"Avisa quem pegou o chão",b:"Terminou um cômodo e ele está sem nada no chão? Avisa quem vai varrer que ali já está liberado."}
-]},
-{id:"lavar",name:"Lavar a louça",room:"cozinha",min:35,phase:2,fixed:"mariah",steps:[
- {t:"Larga o celular",b:"Coloca ele longe da pia. Molhado ele não funciona e com ele na mão você não lava nada. Prende o cabelo e arregaça a manga."},
- {t:"Junta toda a louça da casa",b:"Passa no quarto, na sala, na mesa. Copo atrás do computador também conta. Traz tudo pra perto da pia antes de começar, senão vai ter que começar de novo depois."},
- {t:"Raspa os restos no lixo",b:"Com um garfo ou guardanapo, joga a comida no lixo. Não na pia. Ralo entupido hoje à noite é a última coisa que alguém precisa.",d:"Panela com coisa grudada: enche com água quente e uma gota de detergente e deixa de molho enquanto você lava o resto."},
- {t:"Separa por tipo",b:"Faz montinhos: copos, talheres, pratos, potes, panelas. Parece frescura, mas assim a água fica limpa por mais tempo e você termina mais rápido."},
- {t:"Prepara a esponja",b:"Esponja molhada e um pouco de detergente. Um pouco é do tamanho de uma moeda, não meio frasco. Espuma demais só dá mais trabalho pra enxaguar.",d:"Lado amarelo: tudo. Lado verde (o áspero): só panela. Lado verde em copo deixa risco pra sempre."},
- {t:"Copos primeiro",b:"Copo é o que suja menos, então vai primeiro. Esfrega por dentro, por fora e principalmente a borda, que é onde a boca encosta. Contra a luz não pode ter marca de dedo nem de gordura."},
- {t:"Talheres",b:"Um por um. Garfo: entre os dentes. Faca: segura pelo cabo e passa a esponja com o corte virado pra longe da mão."},
- {t:"Pratos e potes",b:"Frente E verso. Atrás do prato também suja, porque ele fica empilhado em cima de outro. Pote de plástico: os cantos e a tampa, onde a gordura se esconde."},
- {t:"Panelas por último",b:"A que estava de molho agora sai fácil. Lado verde da esponja. Por fora e no fundo também.",d:"Frigideira antiaderente (a preta por dentro): só o lado amarelo."},
- {t:"Enxágua direito",b:"Água corrente até sumir toda a espuma. Teste: passa o dedo. Se ranger, está limpo. Se escorregar, ainda tem sabão. Volta e enxágua."},
- {t:"Escorredor",b:"Copos de boca pra baixo, pratos em pé, talheres de cabo pra baixo no porta-talher. Não empilha coisa molhada uma dentro da outra, senão não seca nunca."},
- {t:"Limpa a pia",b:"Esponja com detergente na cuba inteira, na torneira e na borda. Tira a sujeira do ralo e joga no lixo. Enxágua. Torce a esponja e deixa ela secando de pé."}
-]},
-{id:"secar",name:"Secar a louça",room:"cozinha",min:20,phase:2,lottery:true,steps:[
- {t:"Espera ter uma pilha",b:"Não precisa ficar parado olhando a Mariah lavar. Começa quando o escorredor estiver cheio. Enquanto isso, ajuda a juntar os copos espalhados pela casa."},
- {t:"Pega um pano limpo",b:"Pano de prato seco e limpo. Cheira ele. Se tem cheiro de cachorro molhado, vai pro cesto de roupa e você pega outro. Pano fedido deixa a louça fedida.",d:"Lava as mãos antes. Mão suja em louça limpa desfaz o trabalho de outra pessoa."},
- {t:"Copos",b:"Segura pelo fundo, enfia o pano dentro e gira. Depois por fora. Olha contra a luz: se ficou mancha de água, passa de novo."},
- {t:"Talheres",b:"Um por vez, segurando pelo cabo. Faca com o corte virado pra longe. Não junta um bolo de talheres no pano pra esfregar tudo junto: um deles vai te cortar."},
- {t:"Pratos",b:"Frente e verso, inclusive a borda. Prato seco vai direto pra pilha do armário."},
- {t:"Panelas e potes",b:"Por dentro, por fora, alça e tampa. Pote de plástico demora pra secar, então deixa ele de boca pra baixo uns minutos e passa o pano de novo."},
- {t:"Troca o pano",b:"Quando o pano estiver encharcado, ele só espalha água. Pega outro seco. Pode usar dois, ninguém vai cobrar."},
- {t:"Guarda no lugar certo",b:"Cada coisa volta pro armário dela. Não sabe onde vai? Abre os armários e procura onde estão os iguais. Proibido esconder louça no forno ou no micro-ondas."},
- {t:"Separa a louça da noite",b:"Escolhe os 2 copos (ou taças) e os 2 pratos mais bonitos, sem lascado. Seca muito bem e deixa separado num canto limpo pra quem vai arrumar a mesa."},
- {t:"Fecha o serviço",b:"Escorredor vazio e seco, bancada da pia sem poça d'água, pano usado no cesto de roupa. Pronto."}
-]},
-{id:"sala",name:"Arrumar a sala",room:"sala",min:30,phase:2,steps:[
- {t:"Abre as janelas",b:"Primeira coisa. Sala fechada tem cheiro de sala fechada, e você não sente porque se acostumou. Ela vai sentir na hora."},
- {t:"Pega um saco de lixo",b:"E passa por tudo: embalagem, papel, lata, palito, guardanapo, nota fiscal. Embaixo do sofá também. Sim, tem que agachar."},
- {t:"Tira o que não é da sala",b:"Roupa, mochila, tênis, carregador, copo, prato. Louça vai pra Mariah na cozinha. O resto vai pro dono ou pro cesto de quem está organizando a casa."},
- {t:"Desmonta o sofá",b:"Tira todas as almofadas. Sacode cada uma. Passa a mão ou um pano no assento e nos cantos: vai sair migalha, moeda e coisa que você prefere não saber o que é. Lixo."},
- {t:"Monta o sofá de volta",b:"Almofadas do assento no lugar, retas. Almofadas pequenas em pé, encostadas, todas viradas pro mesmo lado. Manta dobrada em quatro em cima do braço do sofá."},
- {t:"Mesa de centro",b:"Tira tudo de cima. Pano úmido, depois pano seco. Volta no máximo 2 ou 3 coisas. Mesa lotada parece bagunça mesmo estando limpa."},
- {t:"Tira a poeira",b:"Pano seco no rack, estante, prateleiras e aparelhos. Passa o dedo depois: se ficou cinza, não acabou.",d:"Tela da TV: só pano seco e macio. Nunca água, nunca álcool, nunca a camiseta que você está usando."},
- {t:"Controles e fios",b:"Controles juntos num canto da mesa ou do rack. Fios enrolados e escondidos atrás do móvel, não atravessando o chão."},
- {t:"Luz",b:"Testa as lâmpadas. Queimada? Troca. Se tiver abajur ou luz amarela, deixa pronta pra ligar. Luz branca de teto no máximo deixa tudo com cara de posto de saúde."},
- {t:"O chão não é seu",b:"Não varre a sala. Isso é de quem pegou o chão e vai ser feito por último. Seu trabalho é deixar o caminho livre: nada largado no chão."},
- {t:"Olha como visita",b:"Vai até a porta de entrada, vira e olha a sala inteira. O que chama atenção primeiro? Se for alguma coisa feia, resolve agora."}
-]},
-{id:"banheiro",name:"Arrumar o banheiro",room:"banheiro",min:40,phase:2,steps:[
- {t:"Prepara tudo antes",b:"Luva, esponja (uma só pro banheiro, NUNCA a da cozinha), pano, escova de privada, desinfetante ou multiuso e limpa-vidro. Abre a janela e liga o exaustor."},
- {t:"Regra que não é piada",b:"Água sanitária nunca se mistura com outro produto: nem desinfetante, nem vinagre, nem limpa-vidro, nem nada com amônia. A mistura solta gás tóxico. Um produto de cada vez, e enxágua entre eles.",d:"Se o olho arder ou a garganta queimar, sai do banheiro e abre tudo."},
- {t:"Esvazia as superfícies",b:"Tira tudo da pia, do box e de cima da caixa da privada. Coloca num balde ou caixa fora do banheiro. Não dá pra limpar em volta das coisas."},
- {t:"Joga fora",b:"Frasco vazio, lâmina velha, cotonete, embalagem. Esvazia a lixeira e coloca saco novo."},
- {t:"Produto na privada",b:"Joga desinfetante ou água sanitária dentro do vaso, em volta da borda, e deixa agindo. Enquanto o produto trabalha, você vai pra pia."},
- {t:"Pia e torneira",b:"Produto na esponja, esfrega a cuba, a torneira e a bancada. Tira a pasta de dente grudada e o cabelo do ralo. Enxágua e seca a torneira com pano: torneira brilhando faz o banheiro parecer limpo."},
- {t:"Espelho",b:"Limpa-vidro ou álcool no pano (não direto no espelho), passa de cima pra baixo em zigue-zague, depois pano seco. Nenhum respingo de pasta de dente."},
- {t:"Box",b:"Esfrega o vidro ou a cortina, os azulejos até a altura do ombro e o chão do box. Tira o cabelo do ralo. Sim, com a mão de luva. Enxágua."},
- {t:"Agora a privada por dentro",b:"Escova por dentro, principalmente embaixo da borda, onde fica a sujeira que você não vê. Dá descarga."},
- {t:"Privada por fora",b:"Pano com produto: tampa por cima e por baixo, assento por cima e por baixo, a borda, a caixa, a base e o chão em volta e atrás. É ali que mora o cheiro de xixi."},
- {t:"Chão do banheiro",b:"Esse chão é seu, não de quem pegou a vassoura. Pano com produto, do fundo até a porta. Atrás da privada também."},
- {t:"Monta pra visita",b:"Toalha de rosto limpa e seca pendurada. Papel higiênico no suporte e um rolo reserva à vista. Sabonete cheio. Volta só os produtos necessários, arrumados. Tampa da privada abaixada."},
- {t:"Teste do vaso",b:"Senta na tampa e olha em volta. Tudo que você vê dali, ela vai ver. Cabelo no chão? Pasta na pia? Toalha suja? Resolve."}
-]},
-{id:"mesa",name:"Arrumar a mesa e o balcão",room:"cozinha",min:20,phase:2,steps:[
- {t:"Tira tudo",b:"Tudo de cima da mesa e do balcão. Tudo mesmo. Vai pra uma cadeira ou um canto."},
- {t:"Separa o que saiu",b:"Três montes: lixo (pro lixo), louça (pra Mariah) e coisas que não são da cozinha (devolve pro lugar ou pro cesto de quem organiza a casa)."},
- {t:"Limpa a mesa",b:"Pano úmido com um pouco de detergente ou multiuso. Esfrega tudo, inclusive bordas e cantos. Mancha grudada: deixa o produto agir 1 minuto e esfrega de novo."},
- {t:"Limpa o balcão",b:"Mesmo esquema. Arrasta a cafeteira, o micro-ondas e os potes e limpa atrás deles. Migalha você puxa pra dentro da mão, não pro chão."},
- {t:"Seca tudo",b:"Pano seco por cima. Mesa com marca molhada de pano parece suja."},
- {t:"Fogão",b:"Pano com detergente no tampo e em volta das bocas. Gordura pesada: deixa o produto agir uns minutos antes de esfregar. Fogão limpo muda a cara da cozinha inteira."},
- {t:"Volta só o necessário",b:"No balcão, só o que se usa todo dia, alinhado. Fruteira com fruta boa (a banana preta vai embora). Nada de sacola, boleto ou caixa de remédio à vista."},
- {t:"Se vai ter jantar, arruma a mesa",b:"Jogo americano ou toalha limpa. Prato no centro do lugar. Garfo à esquerda. Faca à direita, com o corte virado pro prato. Copo acima da faca. Guardanapo dobrado ao lado do garfo.",d:"Usa os pratos e copos bonitos que quem secou a louça deixou separados."},
- {t:"Cadeiras e detalhe",b:"Cadeiras alinhadas e encostadas na mesa. Vela só em suporte firme, longe de guardanapo e cortina. Um vaso ou a fruteira no meio já resolve."}
-]},
-{id:"chao",name:"Passar vassoura e pano no chão",room:"casa",min:35,phase:3,steps:[
- {t:"Você é o último",b:"Seu trabalho começa quando os outros terminarem cada cômodo. Se varrer antes, alguém sacode almofada e suja tudo de novo. Enquanto espera, ajuda quem estiver atrasado."},
- {t:"Separa o material",b:"Vassoura, pá, balde, rodo, pano de chão limpo e produto (desinfetante ou limpador de piso).",d:"Água sanitária só sozinha. Nunca misturada com outro produto no balde."},
- {t:"Tira as coisas do chão",b:"Cadeiras em cima da mesa ou afastadas. Tapete pequeno: leva lá fora e sacode. Lixeirinha, sapato, caixa: levanta tudo."},
- {t:"Ordem dos cômodos",b:"Começa pelo cômodo mais longe da porta de entrada e vem saindo. Exemplo: quartos, corredor, sala, cozinha. O banheiro já foi feito por quem pegou o banheiro."},
- {t:"Varre direito",b:"Primeiro os cantos e embaixo dos móveis (sofá, cama, rack). Depois o meio. Sempre puxando a sujeira na direção da porta, em movimentos curtos."},
- {t:"Pá, não tapete",b:"Junta num montinho, puxa pra pá e joga no lixo. Proibido empurrar pra debaixo do tapete ou do sofá. Alguém sempre descobre."},
- {t:"Prepara o balde",b:"Balde com água e o tanto de produto que diz o rótulo (geralmente uma tampinha). Mais produto não limpa mais, só deixa o chão grudento."},
- {t:"Torce o pano",b:"Molha o pano e torce até parar de pingar. Pano encharcado deixa o chão molhado por uma hora e com marca de poça."},
- {t:"Passa o pano",b:"Pano no rodo, do fundo do cômodo pra porta, em faixas que se encostam um pouco. Não pisa onde já passou. Canto difícil: com a mão."},
- {t:"Troca a água",b:"Pano escureceu? Enxágua no balde e torce. Água do balde ficou marrom? Joga fora e faz outra. Pano em água suja só espalha sujeira."},
- {t:"Deixa secar",b:"Janela aberta e todo mundo avisado: “não pisa”. Uns 15 minutos."},
- {t:"Guarda tudo",b:"Água suja no tanque ou no vaso. Pano lavado e pendurado. Vassoura, rodo e balde no lugar. Cadeiras e tapetes de volta, retos."}
-]}
-];
-const FINAL={id:"final",name:"Toque final",room:"casa",min:15,phase:4,all:true,steps:[
- {t:"Confere o banheiro de novo",b:"Papel, toalha, sabonete, tampa abaixada, lixeira fechada. Alguém usou depois da limpeza? Passa um pano na pia."},
- {t:"Lixo fora de casa",b:"Nenhum saco de lixo dentro de casa ou encostado na porta de entrada."},
- {t:"Cheiro",b:"Fecha as janelas uns 30 minutos antes de ela chegar. Vela, difusor ou incenso: um só, num lugar só. Cheiro forte demais parece que estão escondendo alguma coisa."},
- {t:"Luz e música",b:"Luz mais baixa e quente na sala. Música baixa já escolhida, pra ninguém ficar procurando no celular na hora."},
- {t:"Bebida e água",b:"Água gelada e alguma bebida na geladeira. Copos limpos separados."},
- {t:"Todo mundo de banho",b:"Casa cheirosa e gente com cheiro de faxina não combina. Banho, roupa limpa, desodorante. Principalmente quem convidou."},
- {t:"O teste da porta",b:"Sai de casa, fecha a porta e entra de novo como se fosse ela. Olha, cheira, escuta. Corrige o que estranhar. Agora sim."}
-]};
-const ALL=[...TASKS,FINAL];
-const BY={}; ALL.forEach(t=>BY[t.id]=t);
-
-/* ---------- estado ---------- */
-const KEY="operacao-visita-v1";
-let S={seed:null,done:{},me:null,approved:{},seenNews:false};
-try{const raw=localStorage.getItem(KEY); if(raw){S=Object.assign(S,JSON.parse(raw));}}catch(e){}
-S.approved=S.approved||{}; S.done=S.done||{}; S.spun=S.spun||{}; S.vale=S.vale||{};
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
-let view="plano", vistoria=null, pinErr="";
-
-/* ---------- divisão fechada (sorteio 7432) ---------- */
-const FIXED={organizar:"kaue",banheiro:"kaue",lavar:"mariah",sala:"mariah",secar:"ayron",mesa:"ayron",chao:"ayron"};
-if(S.seed!==7432){S.seed=7432;save();}
-function assign(){return FIXED;}
-
-/* ---------- dinheiro (ajuste aqui) ---------- */
-const VALOR_POR_MINUTO=0.20;   // R$ por minuto de serviço da tarefa
-const BONUS_TAREFA=1.00;       // R$ extra quando termina uma tarefa inteira
-const PIN_HASH=2090616753;     // senha da vistoria do Tio Pira
-
-function cents(v){return Math.round(v*100);}
-function potC(t){return cents(t.min*VALOR_POR_MINUTO);}
-function stepC(t,k){const n=t.steps.length,p=potC(t),b=Math.floor(p/n);return k===n-1?p-b*(n-1):b;}
-function brl(c,pre){return (pre||"R$")+" "+(c/100).toFixed(2).replace(".",",");}
-function cur(p){return S.approved[p]?"P$":"R$";}
-function doneArr(id){return S.done[id]||[];}
-function isFull(t){return doneArr(t.id).length>=t.steps.length;}
-function earnedTask(t){return doneArr(t.id).reduce((s,k)=>s+stepC(t,k),0)+(isFull(t)?cents(BONUS_TAREFA):0);}
-function maxTask(t){return potC(t)+cents(BONUS_TAREFA);}
-function tasksOf(p){return TASKS.filter(t=>FIXED[t.id]===p);}
-function earned(p){return tasksOf(p).reduce((s,t)=>s+earnedTask(t),0);}
-function maxOf(p){return tasksOf(p).reduce((s,t)=>s+maxTask(t),0);}
-function pct(list){let tot=0,d=0;list.forEach(t=>{tot+=t.steps.length;d+=doneArr(t.id).length;});return tot?Math.round(d/tot*100):0;}
-function mins(list){return list.reduce((s,t)=>s+t.min,0);}
-function hash(s){let x=5381;for(const c of s)x=((x<<5)+x+c.charCodeAt(0))>>>0;return x;}
-
-const LEVELS=[[0,"Imundo do sofá"],[15,"Sujinho em recuperação"],[40,"Aprendiz de esponja"],[70,"Faxineiro de respeito"],[100,"Lenda da vassoura"]];
-function level(pc){let i=0;LEVELS.forEach((l,k)=>{if(pc>=l[0])i=k;});return {i,name:LEVELS[i][1],next:LEVELS[i+1]};}
-const TEASERS=[[25,"Pista 1: não é miojo."],[50,"Pista 2: vem com bebida gelada."],[75,"Pista 3: cada um escolhe o seu."],[100,"Você terminou. Agora só falta a vistoria."]];
-
-/* ---------- helpers ---------- */
+/* ================= util ================= */
 const $=s=>document.querySelector(s);
-function avatar(p){return `<span class="avatar" style="background:${PEOPLE[p].c}">${PEOPLE[p].name[0]}</span>`;}
-function nameTag(p){const P=PEOPLE[p];return `<span class="tagname"><span class="dot" style="background:${P.c}"></span>${P.name}</span>`;}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function show(id){["menu","lobby","over"].forEach(s=>$("#"+s).hidden=(s!==id));}
+function hideAll(){["menu","lobby","over"].forEach(s=>$("#"+s).hidden=true);}
+let myChar=null; try{myChar=localStorage.getItem("rtp-char");}catch(e){}
+if(!CHARS[myChar]) myChar="kaue";
+function saveChar(){try{localStorage.setItem("rtp-char",myChar);}catch(e){}}
 
-function renderTabs(){
-  const items=[["plano","Plano"],...ORDER.map(p=>[p,PEOPLE[p].name]),["comodos","Por cômodo"]];
-  $("#tabs").innerHTML=items.map(([id,l])=>`<button class="tab" role="tab" id="tab-${id}" aria-selected="${view===id}" data-view="${id}">${PEOPLE[id]?`<span class="dot" style="background:${PEOPLE[id].c}"></span>`:""}${l}${PEOPLE[id]?` <span class="tabmoney">${brl(earned(id),cur(id))}</span>`:""}</button>`).join("");
-}
-
-function taskCard(t){
-  const d=doneArr(t.id).length, n=t.steps.length, full=d>=n;
-  const who=t.all?"Os três juntos":PEOPLE[FIXED[t.id]].name;
-  const val=t.all?`<span class="valtag team">Libera o lanche</span>`:`<span class="valtag sponge">${full?"Ganhou "+brl(earnedTask(t)):"Vale até "+brl(maxTask(t))}</span>`;
-  return `<button class="task${full?" done":""}" data-open="${t.id}">
-    <span class="stripe sponge"></span>
-    <span class="inner">
-      <span class="taskrow"><span class="room">${ROOMS[t.room]} · fase ${t.phase}</span>${val}</span>
-      <strong>${t.name}</strong>
-      <span class="meta"><span>${n} cards · uns ${t.min} min · ${who}</span><span class="open">${full?"Feito ✓":d?"Continuar →":"Abrir cards →"}</span></span>
-      <span class="bar"><i style="width:${Math.round(d/n*100)}%"></i></span>
-    </span></button>`;
-}
-
-function newsBanner(){
-  if(S.seenNews) return "";
-  return `<div class="news fade-in"><span class="newbadge sponge">Novo</span><div class="newsbody">
-    <h3>A página foi atualizada: agora a faxina paga.</h3>
-    <p>Cada card que você marcar como feito vira dinheiro na sua carteira. Terminou uma tarefa inteira? Ganha bônus. No final tem a vistoria do Tio Pira e, se aprovar, o <b>Lanche do Tio Pira</b>.</p>
-    <button class="btn btn-dark" id="newsOk">Bora ganhar dinheiro</button></div></div>`;
-}
-
-function chest(p){
-  const pc=pct(tasksOf(p)), ok=S.approved[p];
-  const items=TEASERS.map(([n,txt])=>{const open=ok||pc>=n;return `<li class="${open?"open":"locked"}"><span class="lk">${open?"✓":n+"%"}</span><span>${open?txt:"Bloqueado. Chega em "+n+"% pra ver."}</span></li>`;}).join("");
-  return `<div class="chest">
-    <div class="chest-head"><span class="chest-ico sponge" aria-hidden="true">?</span><div><span class="eyebrow">Prêmio final</span><h2>Lanche do Tio Pira</h2></div></div>
-    <p class="muted" style="margin:0">${ok?"Liberado. Pode cobrar o Tio Pira.":"Ninguém sabe ainda o que é. As pistas vão aparecendo conforme você avança nos seus cards."}</p>
-    <ul class="teasers">${items}</ul></div>`;
-}
-
-function vistoriaPanel(p){
-  const l=tasksOf(p), pc=pct(l), name=PEOPLE[p].name;
-  if(S.approved[p] && !S.spun[p]) return roulettePanel(p);
-  if(S.approved[p]){
-    const l2=tasksOf(p), cards=l2.reduce((s,t)=>s+doneArr(t.id).length,0), bon=l2.filter(isFull).length*cents(BONUS_TAREFA), dep=earned(p)-bon;
-    return `<div class="panel approved"><span class="stamp">Aprovado</span>
-      <h3>Vistoria aprovada. Bem-vindo ao PiraBank.</h3>
-      <div class="receipt">
-        <div class="rhead">PIRABANK · EXTRATO OFICIAL · ${name.toUpperCase()}</div>
-        <div class="rrow"><span>Depósitos da faxina (${cards} cards)</span><b>+ ${brl(dep,"P$")}</b></div>
-        <div class="rrow"><span>Bônus de tarefa completa</span><b>+ ${brl(bon,"P$")}</b></div>
-        <div class="rrow"><span>Taxa de uso da vassoura</span><b>isento</b></div>
-        <div class="rrow"><span>Roleta da Sorte</span><b>Vira Pira-Real</b></div>
-        <div class="rrow total"><span>Saldo em Pira-Reais</span><b>${brl(earned(p),"P$")}</b></div>
-        <div class="rrow"><span>Cotação de hoje: 1 Pira-Real =</span><b>R$ 0,00</b></div>
-        <div class="rrow total"><span>Saldo em reais de verdade</span><b>R$ 0,00</b></div>
-        <div class="rfoot">O Pira-Real é a moeda oficial desta casa. Vale exatamente o mesmo que um elogio do Tio Pira, que, convenhamos, não tem preço. Obrigado por acreditar.</div>
-      </div>
-      <p style="margin:0">O que é real de verdade: <b>o Lanche do Tio Pira</b>. Esse está garantido.</p>
-      <div><button class="btn btn-main sponge" id="saque">Sacar ${brl(earned(p),"P$")}</button></div>
-      <div class="saquemsg" id="saqueMsg" aria-live="polite"></div></div>
-      ${valePanel(p)}`;
-  }
-  if(pc<100) return `<div class="panel"><h3>Vistoria do Tio Pira</h3><p class="muted" style="margin:0">Bloqueada até você terminar todos os seus cards (${pc}% agora). Quando chegar em 100%, chama o Tio Pira. Ele confere cômodo por cômodo e só aprova se estiver limpo de verdade.</p><div class="warnbox">Marcou card sem fazer? A vistoria pega, e aí a carteira volta pra zero.</div></div>`;
-  if(vistoria!==p) return `<div class="panel"><h3>Vistoria do Tio Pira</h3><p style="margin:0">Você terminou tudo. Agora chama o Tio Pira pra conferir.</p><div><button class="btn btn-main sponge" id="vOpen" data-p="${p}">Chamar o Tio Pira</button></div></div>`;
-  return `<div class="panel"><h3>Tio Pira, sua vez</h3><p class="muted" style="margin:0">Confere tudo que ${name} fez antes de digitar a senha.</p>
-    <div class="code-box"><input id="pinIn" type="password" autocomplete="off" placeholder="Senha" aria-label="Senha da vistoria" style="width:160px;letter-spacing:.1em"><button class="btn btn-dark" id="pinOk" data-p="${p}">Aprovar</button><button class="btn btn-ghost" id="pinNo">Cancelar</button></div>
-    ${pinErr?`<div class="warnbox">${pinErr}</div>`:""}</div>`;
-}
-
-/* ---------- roleta (100% de chance de dar ruim) ---------- */
-const LOSE_W=16;
-const SLICES=[["VIRA PIRA-REAL","var(--ink)","var(--bg)",true],["FICA COM TUDO","var(--sponge)","var(--sponge-ink)"],["DOBRO!","var(--scrub)","var(--scrub-ink)"],["FICA COM TUDO","var(--p-kaue)","var(--surface)"],["TRIPLO!","var(--sponge)","var(--sponge-ink)"],["FICA COM TUDO","var(--p-mariah)","var(--surface)"],["DOBRO!","var(--scrub)","var(--scrub-ink)"],["FICA COM TUDO","var(--p-ayron)","var(--surface)"]];
-function wheelSVG(){
-  const big=(360-LOSE_W)/(SLICES.length-1); let a=0, out="";
-  const pt=(deg,r)=>{const t=deg*Math.PI/180;return [(r*Math.sin(t)).toFixed(2),(-r*Math.cos(t)).toFixed(2)];};
-  SLICES.forEach(([label,bg,fg,lose])=>{const w=lose?LOSE_W:big, b=a+w, [x1,y1]=pt(a,100), [x2,y2]=pt(b,100), mid=a+w/2;
-    out+=`<path d="M0 0 L${x1} ${y1} A100 100 0 ${w>180?1:0} 1 ${x2} ${y2} Z" fill="${bg}" stroke="var(--surface)" stroke-width="1.5"/>`;
-    out+=`<text transform="rotate(${mid.toFixed(2)}) translate(0,-56) rotate(-90)" text-anchor="middle" dominant-baseline="central" fill="${fg}" font-size="${lose?7:9.5}" font-weight="800" font-family="var(--display)">${label}</text>`;
-    a=b;});
-  return `<svg viewBox="-104 -104 208 208" role="img" aria-label="Roleta da Sorte"><g id="wheel" class="wheel">${out}</g><circle r="16" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/><text text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="800" fill="var(--ink)" font-family="var(--display)">P$</text></svg>`;
-}
-function roulettePanel(p){
-  const name=PEOPLE[p].name;
-  return `<div class="panel approved roulette"><span class="stamp">Aprovado</span>
-    <h3>Vistoria aprovada! Agora, a Roleta da Sorte.</h3>
-    <p style="margin:0">Pela lei do PiraBank, todo saque passa pela roleta. ${name} tem <b>${brl(earned(p))}</b> na conta. Pode ficar com tudo, dobrar ou até triplicar. Tem uma fatia pequenininha que ninguém nunca tira.</p>
-    <div class="wheel-wrap"><span class="pointer" aria-hidden="true"></span>${wheelSVG()}</div>
-    <div class="spin-result" id="spinRes" aria-live="polite"></div>
-    <div class="spin-ctrl"><button class="btn btn-main sponge" id="spin" data-p="${p}">Girar a roleta</button></div></div>`;
-}
-function sad(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const now=actx.currentTime;
-  [392,370,349,294].forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),t0=now+i*0.38,len=i===3?1.1:0.34;o.type="sawtooth";o.frequency.value=f;
-    if(i===3){o.frequency.setValueAtTime(f,t0);o.frequency.linearRampToValueAtTime(f*0.94,t0+len);}
-    g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.09,t0+0.03);g.gain.exponentialRampToValueAtTime(0.0001,t0+len);
-    o.connect(g);g.connect(actx.destination);o.start(t0);o.stop(t0+len+0.05);});}catch(e){}}
-
-/* ---------- vale-salgado (se reclamarem) ---------- */
-function valeTicket(p){
-  const msg=p==="kaue"?"Kauê, o vale é seu também, mas quem paga é você. Guarda o print.":"Tira print e manda pro Kauê no próximo dia 5.";
-  return `<div class="vale fade-in">
-    <h2 class="vale-title">ZUEIRA!</h2>
-    <p style="margin:0">Vocês ganharam um <b>vale-salgado na padaria</b> (apenas um) pra quando o Kauê receber dinheiro.</p>
-    <div class="ticket sponge">
-      <span class="t-eyebrow">PiraBank · cupom oficial nº ${S.seed}</span>
-      <span class="t-big">VALE 1 SALGADO</span>
-      <span class="t-row"><span>Onde</span><b>Na padaria</b></span>
-      <span class="t-row"><span>Quem paga</span><b>Kauê</b></span>
-      <span class="t-row"><span>Quando</span><b>Quando o Kauê receber, a partir do dia 5</b></span>
-      <span class="t-row"><span>Quantidade</span><b>Apenas um. Um só.</b></span>
-    </div>
-    <p class="vale-cta">${msg}</p></div>`;
-}
-function valePanel(p){
-  if(S.vale[p]) return `<div class="panel">${valeTicket(p)}</div>`;
-  return `<div class="panel" id="valeBox"><h3>Não gostou do PiraBank?</h3>
-    <p class="muted" style="margin:0">A casa é uma democracia. Se a maioria votar, o site é excluído pra sempre.</p>
-    <div><button class="btn btn-warn" id="votar" data-p="${p}">Votar pra excluir o site</button></div>
-    <div class="votemsg" id="voteMsg" aria-live="polite"></div></div>`;
-}
-
-/* ---------- views ---------- */
-function renderPlano(){
-  const people=ORDER.map(p=>{const l=tasksOf(p),pc=pct(l),lv=level(pc);return `<button class="pcard" data-view="${p}">
-      <span class="pcard-head">${avatar(p)}<span><span class="who">${PEOPLE[p].name}</span><br><span class="mins">${lv.name}</span></span></span>
-      <span class="pmoney">${brl(earned(p),cur(p))}<small> de ${brl(maxOf(p),cur(p))}</small></span>
-      <span class="chips">${l.map(t=>`<span class="chip">${t.name}</span>`).join("")}</span>
-      <span class="bar"><i style="width:${pc}%"></i></span>
-      <span class="mins">${S.approved[p]?"Vistoria aprovada ✓":pc+"% feito · uns "+mins(l)+" min"}</span></button>`;}).join("");
-  const phases=PHASES.map(ph=>{
-    const list=ALL.filter(t=>t.phase===ph.n);
-    return `<div class="phase"><span class="phase-n sponge">${ph.n}</span><div class="phase-body"><h3>${ph.t}</h3><p>${ph.s}</p>
-      <div class="chips">${list.map(t=>`<span class="chip">${t.name} · ${t.all?"os três":PEOPLE[FIXED[t.id]].name}</span>`).join("")}</div></div></div>`;}).join("");
-  return `<section class="section">
-    <div class="code-pill sponge">Sorteio fechado · código <b>${S.seed}</b> <span>A divisão não muda mais.</span></div>
-    <div class="people">${people}</div>
-    <div class="panel">
-      <h2>Como ganhar dinheiro</h2>
-      <ul class="rules">
-        <li><b>Cada card feito</b> cai na sua carteira na hora. Tarefa que dá mais trabalho vale mais.</li>
-        <li><b>Terminou uma tarefa inteira?</b> Mais ${brl(cents(BONUS_TAREFA))} de bônus.</li>
-        <li><b>Sobe de nível</b> conforme avança: de ${LEVELS[0][1]} até ${LEVELS[LEVELS.length-1][1]}.</li>
-        <li><b>No final</b>, o Tio Pira faz a vistoria no seu celular. Aprovou, o PiraBank libera o saque e o lanche está garantido. E ainda tem a <b>Roleta da Sorte</b>, que pode dobrar ou até triplicar o que você ganhou.</li>
-      </ul>
-      <p class="fine">* Valores administrados pelo PiraBank, instituição financeira oficial desta casa. Condições completas liberadas após a vistoria.</p>
-    </div>
-    <div class="chest-big"><span class="chest-ico sponge" aria-hidden="true">?</span><div><span class="eyebrow">Prêmio final da equipe</span><h2>Lanche do Tio Pira</h2><p class="muted" style="margin:0">Liberado quando os três terminarem tudo, fizerem o Toque final juntos e passarem na vistoria. O que é? Só vai descobrindo pelas pistas na aba de cada um.</p></div></div>
-    <div class="panel"><h2>Ordem do serviço</h2><div class="phases">${phases}</div></div>
-  </section>`;
-}
-
-function renderPerson(p){
-  const P=PEOPLE[p], l=tasksOf(p), pc=pct(l), lv=level(pc);
-  const nextTxt=lv.next?`Faltam ${lv.next[0]-pc}% pra virar <b>${lv.next[1]}</b>`:"Nível máximo. Respeito.";
-  return `<section class="section">
-    <div class="person-head">${avatar(p)}<div class="txt"><h2>${P.name}</h2><span class="muted">Uns ${mins(l)} min de serviço · ${l.length} tarefas</span></div></div>
-    <div class="wallet sponge">
-      <span class="wlabel">PiraBank · conta de ${P.name}</span>
-      <span class="amt" id="amt-${p}">${brl(earned(p),cur(p))}</span>
-      <span class="wsub">${S.approved[p]?"Saldo em Pira-Reais · cotação de hoje: 1 Pira-Real = R$ 0,00":"de até "+brl(maxOf(p))+" · saque liberado depois da vistoria*"}</span>
-      <span class="wbar"><i style="width:${pc}%"></i></span>
-      <span class="wlvl"><span class="lvl">Nível ${lv.i+1}: ${lv.name}</span><span>${nextTxt}</span></span>
-    </div>
-    <div class="tasks">${l.map(t=>taskCard(t)).join("")}</div>
-    <div class="section" style="margin-top:6px"><h3>No fim, os três juntos</h3><div class="tasks">${taskCard(FINAL)}</div></div>
-    ${chest(p)}
-    ${vistoriaPanel(p)}
-  </section>`;
-}
-
-function renderRooms(){
-  const groups=Object.keys(ROOMS).map(r=>{
-    const list=ALL.filter(t=>t.room===r);
-    return `<div class="room-group"><h3>${ROOMS[r]}</h3><div class="room-list">${list.map(t=>{
-      const d=doneArr(t.id).length,n=t.steps.length;
-      const who=t.all?`<span class="tagname">Os três</span>`:nameTag(FIXED[t.id]);
-      return `<button class="room-item" data-open="${t.id}"><span class="l"><b>${t.name}</b><span>${d}/${n} cards · ${t.all?"libera o lanche":"vale até "+brl(maxTask(t))}</span></span>${who}</button>`;}).join("")}</div></div>`;}).join("");
-  return `<section class="section">${groups}</section>`;
-}
-
-function render(){
-  renderTabs();
-  let h=newsBanner();
-  if(view==="plano") h+=renderPlano();
-  else if(view==="comodos") h+=renderRooms();
-  else h+=renderPerson(view);
-  $("#view").innerHTML=h;
-}
-
-/* ---------- efeitos ---------- */
-const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* ================= som ================= */
 let actx=null;
-function ding(big){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const now=actx.currentTime;
-  const notes=big?[1046.5,1318.5,1568,2093]:[1318.5,1760];
-  notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),t0=now+i*0.07;o.type="triangle";o.frequency.value=f;
-    g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+0.28);
-    o.connect(g);g.connect(actx.destination);o.start(t0);o.stop(t0+0.3);});}catch(e){}}
-function floater(txt,big){const el=document.createElement("div");el.className="floater"+(big?" big":"");el.textContent=txt;document.body.appendChild(el);setTimeout(()=>el.remove(),1300);}
-function confetti(){ if(reduce) return; const cols=["var(--sponge)","var(--scrub)","var(--p-kaue)","var(--p-mariah)","var(--p-ayron)"];
-  for(let k=0;k<50;k++){const i=document.createElement("i");i.className="confetto";i.style.left=Math.random()*100+"vw";i.style.background=cols[k%cols.length];
-    i.style.animationDelay=(Math.random()*0.4)+"s";i.style.animationDuration=(1.2+Math.random()*0.9)+"s";document.body.appendChild(i);setTimeout(()=>i.remove(),2600);}}
+function tone(freqs,type,gap,len,vol){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const now=actx.currentTime;
+  freqs.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),t0=now+i*gap;o.type=type;o.frequency.value=f;
+  g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+len);
+  o.connect(g);g.connect(actx.destination);o.start(t0);o.stop(t0+len+0.02);});}catch(e){}}
+const SFX={coin:()=>tone([1568,2093],"triangle",0.05,0.12,0.08),jump:()=>tone([440,660],"square",0.04,0.08,0.03),
+  slide:()=>tone([300,200],"sawtooth",0.04,0.08,0.03),stumble:()=>tone([220,160],"sawtooth",0.08,0.18,0.09),
+  caught:()=>tone([392,349,311,262],"sawtooth",0.22,0.3,0.08),go:()=>tone([523,784],"triangle",0.08,0.2,0.1),beep:()=>tone([523],"triangle",0,0.12,0.08)};
 
-/* ---------- baralho de flash cards ---------- */
-let deck={id:null,i:0,fin:false};
-const FIN_MSG=["Pronto. Viu? Ninguém morreu.","Acabou. E ainda ganhou dinheiro.","Feito. A visita agradece, mesmo sem saber.","Terminou. Agora vai ver se alguém precisa de ajuda."];
-function openDeck(id){
-  const t=BY[id]; const d=doneArr(id);
-  let i=0; while(i<t.steps.length&&d.includes(i)) i++;
-  deck={id,i:Math.min(i,t.steps.length-1),fin:i>=t.steps.length};
-  $("#deck").hidden=false; document.body.style.overflow="hidden"; renderDeck();
+/* ================= canvas ================= */
+const cv=$("#cv"),ctx=cv.getContext("2d");
+let scale=1;
+function resize(){
+  const vw=window.innerWidth,vh=window.innerHeight;
+  scale=Math.min(vw/W,vh/H);
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.style.width=Math.floor(W*scale)+"px";cv.style.height=Math.floor(H*scale)+"px";
+  cv.width=Math.floor(W*scale*dpr);cv.height=Math.floor(H*scale*dpr);
+  ctx.setTransform(scale*dpr,0,0,scale*dpr,0,0);
 }
-function closeDeck(){$("#deck").hidden=true;document.body.style.overflow="";render();}
-function renderDeck(){
-  const t=BY[deck.id], n=t.steps.length, d=doneArr(t.id);
-  const owner=t.all?null:FIXED[t.id];
-  const who=t.all?"Os três juntos":PEOPLE[owner].name;
-  const dots=t.steps.map((_,k)=>`<i class="${d.includes(k)?"ok":""}${!deck.fin&&k===deck.i?" cur":""}"></i>`).join("");
-  const wallet=owner?`<span class="wchip sponge" id="deckWallet">${brl(earned(owner))}</span>`:"";
-  let card,ctrl;
-  if(deck.fin){
-    card=`<div class="fcard"><div class="top-band sponge"></div><div class="content finish fade-in"><span class="stepno">${n} de ${n} cards</span><h2>${FIN_MSG[Math.floor(Math.random()*FIN_MSG.length)]}</h2>
-      <p>${t.name}: concluído.${owner?` ${PEOPLE[owner].name} ganhou <b>${brl(earnedTask(t))}</b> nessa tarefa, com bônus.`:" Mais um passo pro Lanche do Tio Pira."}</p></div></div>`;
-    ctrl=`<button class="btn btn-ghost" id="dRestart">Rever do início</button><button class="btn btn-main sponge" id="dClose2">Voltar pra lista</button>`;
+window.addEventListener("resize",resize);resize();
+
+/* ================= pista (determinística pelo seed) ================= */
+let track;
+function newTrack(seed){track={rng:mulberry32(seed),nextZ:700,obs:[],coins:[]};}
+function pick3(r){return Math.floor(r()*3);}
+function obsType(r){const x=r();return x<0.42?"balde":x<0.72?"varal":"sofa";}
+function coinLine(lane,z,n){for(let i=0;i<n;i++) track.coins.push({lane,z:z+i*38,taken:false});}
+function genUntil(zMax){
+  const r=track.rng;
+  while(track.nextZ<zMax){
+    const z=track.nextZ, k=Math.min(1,z/40000), p=r();
+    if(p<0.36){
+      const L=pick3(r); track.obs.push({lane:L,z,type:obsType(r),hit:false});
+      if(r()<0.6){const c=(L+1+pick3(r)%2)%3; coinLine(c,z-80,5);}
+    }else if(p<0.70){
+      const free=pick3(r);
+      for(let l=0;l<3;l++) if(l!==free) track.obs.push({lane:l,z,type:obsType(r),hit:false});
+      if(r()<0.65) coinLine(free,z-60,4);
+    }else if(p<0.84){
+      const t=r()<0.5?"balde":"varal";
+      for(let l=0;l<3;l++) track.obs.push({lane:l,z,type:t,hit:false});
+    }else{
+      coinLine(pick3(r),z-40,7);
+    }
+    track.nextZ+=Math.max(235,330-110*k+r()*130);
+  }
+  /* limpa o que ficou pra trás */
+  const cut=me.d-300;
+  if(track.obs.length>60) track.obs=track.obs.filter(o=>o.z+130>cut);
+  if(track.coins.length>80) track.coins=track.coins.filter(c=>c.z>cut);
+}
+
+/* ================= jogador local ================= */
+let me, mode="menu", gameOn=false, raceSeed=0, shake=0, particles=[], piraOff=180, caughtAnim=0;
+function resetMe(){me={lane:1,x:LANES[1],jumpT:0,slideT:0,d:0,v:250,t:0,alive:true,coins:0,stumbleT:0,phase:0};piraOff=180;caughtAnim=0;particles=[];}
+resetMe();
+const JUMP=0.62,SLIDE=0.6;
+function jumpH(p){return p.jumpT>0?Math.sin(Math.PI*(1-p.jumpT/JUMP))*48:0;}
+function act(a){
+  if(!gameOn||!me.alive) return;
+  if(a==="left"&&me.lane>0) me.lane--;
+  else if(a==="right"&&me.lane<2) me.lane++;
+  else if(a==="up"&&me.jumpT<=0){me.jumpT=JUMP;me.slideT=0;SFX.jump();}
+  else if(a==="down"){me.jumpT=0;me.slideT=SLIDE;SFX.slide();}
+}
+function stumble(){
+  if(me.stumbleT>0){caught();return;}
+  me.stumbleT=4.5; shake=0.35; SFX.stumble(); dust(me.x,PY,12,"#E9D9C4");
+  if(navigator.vibrate) try{navigator.vibrate(120);}catch(e){}
+}
+function caught(){
+  if(!me.alive) return;
+  me.alive=false; caughtAnim=0.001; shake=0.5; SFX.caught();
+  if(navigator.vibrate) try{navigator.vibrate([80,60,200]);}catch(e){}
+  sendState(true);
+  setTimeout(onMyDeath,1300);
+}
+function dust(x,y,n,col){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*160,vy:(Math.random()-.2)*140,life:0.5+Math.random()*0.3,col,r:2+Math.random()*3});}
+
+function update(dt){
+  if(!gameOn) return;
+  if(me.alive){
+    me.t+=dt; me.v=Math.min(520,250+me.t*2.4); me.d+=me.v*dt; me.phase+=dt*me.v/22;
+    me.x+= (LANES[me.lane]-me.x)*Math.min(1,dt*18);
+    if(me.jumpT>0) me.jumpT=Math.max(0,me.jumpT-dt);
+    if(me.slideT>0) me.slideT=Math.max(0,me.slideT-dt);
+    if(me.stumbleT>0) me.stumbleT=Math.max(0,me.stumbleT-dt);
+    genUntil(me.d+1300);
+    /* colisões */
+    const jh=jumpH(me);
+    for(const o of track.obs){
+      if(o.hit||o.lane!==me.lane) continue;
+      if(o.type==="sofa"){ if(me.d>o.z-14&&me.d<o.z+110){o.hit=true;caught();break;} }
+      else if(Math.abs(o.z-me.d)<14){
+        if(o.type==="balde"&&jh<18){o.hit=true;stumble();}
+        else if(o.type==="varal"&&me.slideT<=0){o.hit=true;stumble();}
+      }
+    }
+    for(const c of track.coins){
+      if(c.taken||c.lane!==me.lane) continue;
+      if(Math.abs(c.z-me.d)<18){c.taken=true;me.coins++;SFX.coin();dust(me.x,PY-10,4,"#F4C63D");}
+    }
+    piraOff+=((me.stumbleT>0?62:180)-piraOff)*Math.min(1,dt*3);
   }else{
-    const s=t.steps[deck.i], already=d.includes(deck.i);
-    const val=owner?`<span class="cardval sponge">${already?"Já ganhou ":"Este card vale "}${brl(stepC(t,deck.i))}</span>`:`<span class="cardval team">Missão da equipe</span>`;
-    card=`<div class="fcard" id="fcard"><div class="top-band sponge"></div><div class="content fade-in">
-      <span class="steprow"><span class="stepno">Card ${deck.i+1} de ${n}</span>${val}</span>
-      <h2>${s.t}</h2><p>${s.b}</p>
-      ${s.d?`<div class="tip"><b>Presta atenção</b>${s.d}</div>`:""}
-      ${already?`<span class="checked">✓ Já marcado como feito</span>`:""}
-      ${deck.i===n-1&&owner&&!isFull(t)?`<span class="bonusnote">Último card: terminando, ganha mais ${brl(cents(BONUS_TAREFA))} de bônus.</span>`:""}
-    </div></div>`;
-    ctrl=`<button class="btn btn-ghost" id="dPrev" ${deck.i===0?"disabled":""}>← Voltar</button><button class="btn btn-main sponge" id="dNext">${deck.i===n-1?"Feito, terminei":"Feito, próximo →"}</button>`;
+    caughtAnim+=dt; piraOff+=(4-piraOff)*Math.min(1,dt*6);
   }
-  $("#deckWrap").innerHTML=`<div class="deck-top"><div class="t"><b>${t.name}</b><span>${who} · ${ROOMS[t.room]}</span></div>${wallet}<button class="x" id="dClose" aria-label="Fechar">×</button></div>
-    <div class="dots" aria-hidden="true">${dots}</div>${card}<div class="deck-ctrl">${ctrl}</div><div class="swipe-hint">Dá pra arrastar o card pro lado</div>`;
+  if(shake>0) shake=Math.max(0,shake-dt);
+  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;}
+  particles=particles.filter(p=>p.life>0);
+  /* outros jogadores: interpola */
+  for(const id in others){const o=others[id]; o.x+=(LANES[o.lane]-o.x)*Math.min(1,dt*14); if(o.alive) o.dShown+=(o.d+o.v*(performance.now()-o.at)/1000-o.dShown)*Math.min(1,dt*8); o.phase+=dt*8;}
 }
-function next(){ if(deck.fin) return; const t=BY[deck.id]; const d=doneArr(t.id); const owner=t.all?null:FIXED[t.id];
-  const wasFull=isFull(t);
-  if(!d.includes(deck.i)){
-    d.push(deck.i);S.done[t.id]=d;save();
-    if(owner){floater("+"+brl(stepC(t,deck.i)));ding(false);} else ding(false);
-    if(!wasFull&&isFull(t)){ setTimeout(()=>{ if(owner) floater("BÔNUS +"+brl(cents(BONUS_TAREFA)),true); ding(true); confetti(); },450); }
+
+/* ================= desenho ================= */
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawFloor(d){
+  ctx.fillStyle="#B98757";ctx.fillRect(45,0,270,H);
+  const ph=34, base=Math.floor(d/ph);
+  for(let i=-2;i<24;i++){
+    const row=base+i, y=PY-(row*ph-d);
+    if(y<-ph||y>H+ph) continue;
+    ctx.fillStyle=row%2?"#B07F50":"#BC8B5B";ctx.fillRect(45,y-ph,270,ph);
+    ctx.fillStyle="rgba(60,35,15,.35)";ctx.fillRect(45,y-1,270,1.5);
+    const sx=45+((row*97)%270+270)%270, sx2=45+((row*97+135)%270+270)%270;
+    ctx.fillRect(sx,y-ph,1.5,ph);ctx.fillRect(sx2,y-ph,1.5,ph);
   }
-  if(deck.i<t.steps.length-1) deck.i++; else deck.fin=true; renderDeck();}
-function prev(){ if(deck.fin){deck.fin=false;deck.i=BY[deck.id].steps.length-1;} else if(deck.i>0) deck.i--; renderDeck();}
+  /* tapete passadeira no meio */
+  ctx.fillStyle="rgba(120,30,40,.22)";ctx.fillRect(140,0,80,H);
+  ctx.fillStyle="rgba(244,198,61,.18)";ctx.fillRect(144,0,2,H);ctx.fillRect(214,0,2,H);
+  /* paredes */
+  ctx.fillStyle="#E6D8C3";ctx.fillRect(0,0,45,H);ctx.fillRect(315,0,45,H);
+  ctx.fillStyle="#6E4F37";ctx.fillRect(39,0,6,H);ctx.fillRect(315,0,6,H);
+  /* portas e quadros nas paredes */
+  const dp=420, db=Math.floor(d/dp);
+  for(let i=-1;i<4;i++){const row=db+i, y=PY-(row*dp-d), left=(row%2===0);
+    if(y<-120||y>H+40) continue;
+    const x=left?6:321;
+    if(row%3===0){ctx.fillStyle="#8A6545";ctx.fillRect(x,y-90,33,90);ctx.fillStyle="#6E4F37";ctx.fillRect(left?x+27:x+2,y-48,4,4);}
+    else{ctx.fillStyle="#C94F3D";ctx.fillRect(x+6,y-60,21,28);ctx.strokeStyle="#4A3424";ctx.lineWidth=2;ctx.strokeRect(x+6,y-60,21,28);}
+  }
+}
+function drawBalde(x,y){
+  ctx.fillStyle="rgba(0,0,0,.25)";ctx.beginPath();ctx.ellipse(x+3,y+5,22,10,0,0,7);ctx.fill();
+  ctx.fillStyle="#2F6FCB";ctx.beginPath();ctx.arc(x,y-4,20,0,7);ctx.fill();
+  ctx.fillStyle="#8FCBF0";ctx.beginPath();ctx.arc(x,y-4,14,0,7);ctx.fill();
+  ctx.fillStyle="rgba(255,255,255,.7)";ctx.beginPath();ctx.ellipse(x-4,y-8,5,3,0.5,0,7);ctx.fill();
+  ctx.strokeStyle="#1D3F73";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y-4,20,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
+  badge(x,y-34,"↑","#2F6FCB");
+}
+function drawVaral(x,y){
+  ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(x-40,y+10,80,6);
+  ctx.fillStyle="#5B4636";ctx.beginPath();ctx.arc(x-42,y,5,0,7);ctx.arc(x+42,y,5,0,7);ctx.fill();
+  ctx.strokeStyle="#E9E2D6";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-42,y);ctx.lineTo(x+42,y);ctx.stroke();
+  const cols=["#E05A9C","#3FA86B","#F4C63D"];
+  for(let i=0;i<3;i++){const cx=x-26+i*26;ctx.fillStyle=cols[i];rr(cx-10,y-2,20,16,3);ctx.fill();ctx.fillStyle="rgba(255,255,255,.25)";ctx.fillRect(cx-10,y-2,20,3);}
+  badge(x,y-26,"↓","#3FA86B");
+}
+function drawSofa(x,y){
+  ctx.fillStyle="rgba(0,0,0,.3)";rr(x-36,y-104,80,112,10);ctx.fill();
+  ctx.fillStyle="#6B3F7E";rr(x-40,y-110,80,112,12);ctx.fill();
+  ctx.fillStyle="#82529A";rr(x-30,y-100,60,44,8);ctx.fill();rr(x-30,y-50,60,44,8);ctx.fill();
+  ctx.fillStyle="#56306A";ctx.fillRect(x-40,y-110,10,112);ctx.fillRect(x+30,y-110,10,112);
+  badge(x,y-124,"✕","#E0533D");
+}
+function badge(x,y,t,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,10,0,7);ctx.fill();ctx.fillStyle="#fff";ctx.font="800 13px "+getComputedStyle(document.documentElement).getPropertyValue("--body");ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(t,x,y+1);}
+function drawCoin(x,y,t){
+  const s=Math.abs(Math.sin(t*4+y*0.05));
+  ctx.fillStyle="#C9971A";ctx.beginPath();ctx.ellipse(x,y,9*Math.max(.35,s),9,0,0,7);ctx.fill();
+  ctx.fillStyle="#F4C63D";ctx.beginPath();ctx.ellipse(x,y,7*Math.max(.3,s),7,0,0,7);ctx.fill();
+  if(s>.6){ctx.fillStyle="#7A5A0B";ctx.font="800 7px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("P$",x,y+.5);}
+}
+function drawRunner(x,y,ch,jh,sliding,phase,alpha,label){
+  const C=CHARS[ch]; ctx.save(); ctx.globalAlpha=alpha;
+  ctx.fillStyle="rgba(0,0,0,.28)";ctx.beginPath();ctx.ellipse(x,y+10,16-jh*0.12,7-jh*0.05,0,0,7);ctx.fill();
+  const s=1+jh/110, by=y-jh*0.55;
+  ctx.translate(x,by);ctx.scale(s,s);
+  if(sliding){
+    ctx.fillStyle=C.c;rr(-13,-6,26,30,10);ctx.fill();
+    ctx.fillStyle=C.hair;ctx.beginPath();ctx.arc(0,-10,10,0,7);ctx.fill();
+  }else{
+    const sw=Math.sin(phase)*6;
+    ctx.fillStyle="#2C2420";ctx.beginPath();ctx.ellipse(-6,10+sw,4,6,0,0,7);ctx.ellipse(6,10-sw,4,6,0,0,7);ctx.fill();
+    ctx.fillStyle="#F0C6A0";ctx.beginPath();ctx.arc(-15,-2-sw*.6,4,0,7);ctx.arc(15,-2+sw*.6,4,0,7);ctx.fill();
+    ctx.fillStyle=C.c;rr(-13,-10,26,22,9);ctx.fill();
+    ctx.fillStyle=C.hair;ctx.beginPath();ctx.arc(0,-14,10,0,7);ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.95)";ctx.font="800 11px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(C.name[0],0,2);
+  }
+  ctx.restore();
+  if(label){ctx.save();ctx.globalAlpha=Math.min(1,alpha+.25);ctx.font="800 11px sans-serif";ctx.textAlign="center";const w=ctx.measureText(label).width+12;
+    ctx.fillStyle="rgba(20,15,11,.75)";rr(x-w/2,y-46-jh*0.55,w,16,8);ctx.fill();ctx.fillStyle=C.c;ctx.textBaseline="middle";ctx.fillText(label,x,y-38-jh*0.55);ctx.restore();}
+}
+function drawPira(x,y,t,angry){
+  ctx.save();
+  ctx.fillStyle="rgba(0,0,0,.3)";ctx.beginPath();ctx.ellipse(x,y+18,30,12,0,0,7);ctx.fill();
+  const sw=Math.sin(t*14)*7;
+  /* vassoura balançando na frente */
+  ctx.save();ctx.translate(x+16,y-12);ctx.rotate(-0.5+Math.sin(t*9)*0.5);
+  ctx.fillStyle="#8B5A2B";ctx.fillRect(-2,-62,4,62);
+  ctx.fillStyle="#E9C46A";ctx.beginPath();ctx.moveTo(-12,-62);ctx.lineTo(12,-62);ctx.lineTo(8,-80);ctx.lineTo(-8,-80);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="#B8913A";ctx.lineWidth=1;for(let i=-6;i<=6;i+=4){ctx.beginPath();ctx.moveTo(i,-63);ctx.lineTo(i*0.7,-79);ctx.stroke();}
+  ctx.restore();
+  ctx.fillStyle="#2C2420";ctx.beginPath();ctx.ellipse(x-10,y+12+sw,6,9,0,0,7);ctx.ellipse(x+10,y+12-sw,6,9,0,0,7);ctx.fill();
+  ctx.fillStyle="#E8B48C";ctx.beginPath();ctx.arc(x-24,y-4-sw*.5,6,0,7);ctx.fill();
+  ctx.fillStyle="#2D6A45";rr(x-22,y-16,44,32,14);ctx.fill();
+  ctx.fillStyle="#F4C63D";ctx.fillRect(x-22,y-2,44,5);
+  ctx.fillStyle="#E8B48C";ctx.beginPath();ctx.arc(x,y-22,14,0,7);ctx.fill();
+  ctx.fillStyle="#8D8D8D";ctx.beginPath();ctx.arc(x,y-22,14,Math.PI*0.05,Math.PI*0.95,true);ctx.fill();
+  ctx.fillStyle="#E8B48C";ctx.beginPath();ctx.arc(x,y-25,10,0,7);ctx.fill();
+  if(angry){ctx.fillStyle="#E0533D";ctx.font="800 22px sans-serif";ctx.textAlign="center";ctx.fillText("!",x+24,y-38);}
+  ctx.font="800 10px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillStyle="rgba(20,15,11,.8)";rr(x-30,y+28,60,15,7);ctx.fill();ctx.fillStyle="#F4C63D";ctx.fillText("TIO PIRA",x,y+36);
+  ctx.restore();
+}
+function draw(now){
+  const t=now/1000;
+  ctx.save();
+  if(shake>0){ctx.translate((Math.random()-.5)*10*shake/0.35,(Math.random()-.5)*10*shake/0.35);}
+  ctx.fillStyle="#1E1712";ctx.fillRect(-20,-20,W+40,H+40);
+  drawFloor(me.d);
+  if(track){
+    for(const c of track.coins){if(c.taken) continue;const y=PY-(c.z-me.d);if(y>-20&&y<H+20) drawCoin(LANES[c.lane],y,t);}
+    const vis=track.obs.filter(o=>{const y=PY-(o.z-me.d);return y>-30&&y<H+140;}).sort((a,b)=>b.z-a.z);
+    for(const o of vis){const y=PY-(o.z-me.d), x=LANES[o.lane];
+      if(o.type==="balde") drawBalde(x,y); else if(o.type==="varal") drawVaral(x,y); else drawSofa(x,y);}
+  }
+  /* outros jogadores */
+  const edge=[];
+  for(const id in others){const o=others[id]; if(!o.char) continue;
+    const y=PY-(o.dShown-me.d);
+    if(y<40){edge.push({o,top:true});continue;} if(y>H-20){edge.push({o,top:false});continue;}
+    drawRunner(o.x,y,o.char,o.act==="j"?30:0,o.act==="s",o.phase,o.alive?0.6:0.25,CHARS[o.char].name+(o.alive?"":" (pego)"));
+  }
+  if(gameOn||mode==="dead") drawRunner(me.x,PY,myChar,jumpH(me),me.slideT>0,me.phase,me.alive?1:0.7,null);
+  /* Tio Pira */
+  if(gameOn||mode==="dead"){
+    const tx=me.alive?(me.x*0.6+180*0.4):me.x;
+    drawPira(tx,PY+piraOff,t,me.stumbleT>0||!me.alive);
+  }
+  for(const p of particles){ctx.globalAlpha=Math.max(0,p.life*1.6);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();}
+  ctx.globalAlpha=1;
+  /* indicadores de quem está fora da tela */
+  edge.forEach(({o,top},i)=>{const diff=Math.round((o.dShown-me.d)/PX);const C=CHARS[o.char];const y=top?58+i*24:H-30-i*24;
+    const txt=(top?"▲ ":"▼ ")+C.name+" "+(diff>0?"+":"")+diff+" m"+(o.alive?"":" · pego");
+    ctx.font="800 12px sans-serif";const w=ctx.measureText(txt).width+16;ctx.fillStyle="rgba(20,15,11,.82)";rr(o.x-w/2,y-10,w,20,10);ctx.fill();
+    ctx.fillStyle=C.c;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(txt,o.x,y);});
+  if(!me.alive&&caughtAnim>0){ctx.fillStyle="rgba(224,83,61,"+Math.min(.35,caughtAnim*.5)+")";ctx.fillRect(0,0,W,H);
+    ctx.fillStyle="#fff";ctx.font="800 44px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("PEGO!",W/2,H*0.35);}
+  ctx.restore();
+}
 
-/* ---------- saque (nunca funciona) ---------- */
-const SAQUE=["Saque negado: o caixa eletrônico do PiraBank é o Tio Pira, e ele está ocupado se arrumando.",
- "Erro 404: dinheiro não encontrado. Tente novamente em nunca.",
- "Agência mais próxima: atrás do sofá. Horário de atendimento: 30 de fevereiro, das 25h às 26h.",
- "Seu gerente mandou um recado: obrigado pela faxina, sério. O lanche continua de pé.",
- "Você tentou sacar 5 vezes. O PiraBank admira sua fé."];
-let saqueN=0;
-/* ---------- eventos ---------- */
+/* ================= HUD ================= */
+let hudTick=0;
+function updateHud(){
+  const m=Math.floor(me.d/PX);
+  let h=`<span class="hchip big">${m} m</span><span class="hchip coin">P$ ${me.coins}</span>`;
+  for(const id in others){const o=others[id];if(!o.char)continue;h+=`<span class="hchip${o.alive?"":" out"}"><span class="d" style="background:${CHARS[o.char].c}"></span>${CHARS[o.char].name} ${Math.floor(o.dShown/PX)} m</span>`;}
+  $("#hudTop").innerHTML=h;
+  $("#hudWarn").innerHTML=(me.alive&&me.stumbleT>0)?`<div class="warn">O TIO PIRA TÁ COLADO! ${Math.ceil(me.stumbleT)}s</div>`:"";
+}
+
+/* ================= loop ================= */
+let last=performance.now(), acc=0;
+function frame(now){
+  let dt=(now-last)/1000; last=now; if(dt>0.1) dt=0.1;
+  acc+=dt; while(acc>=1/120){update(1/120);acc-=1/120;}
+  draw(now);
+  if(gameOn||mode==="dead"){hudTick+=dt;if(hudTick>0.15){hudTick=0;updateHud();}}
+  netTick(dt);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ================= controles ================= */
+window.addEventListener("keydown",e=>{
+  const k=e.key.toLowerCase();
+  const map={arrowleft:"left",a:"left",arrowright:"right",d:"right",arrowup:"up",w:"up"," ":"up",arrowdown:"down",s:"down"};
+  if(map[k]&&gameOn){e.preventDefault();act(map[k]);}
+});
+let tsx=null,tsy=null,tst=0,swiped=false;
+cv.addEventListener("pointerdown",e=>{tsx=e.clientX;tsy=e.clientY;tst=performance.now();swiped=false;});
+cv.addEventListener("pointermove",e=>{ if(tsx===null||swiped) return; const dx=e.clientX-tsx,dy=e.clientY-tsy,th=24;
+  if(Math.abs(dx)>th||Math.abs(dy)>th){swiped=true; if(Math.abs(dx)>Math.abs(dy)) act(dx<0?"left":"right"); else act(dy<0?"up":"down");}});
+cv.addEventListener("pointerup",()=>{ if(tsx!==null&&!swiped&&performance.now()-tst<250) act("up"); tsx=null;});
+cv.addEventListener("pointercancel",()=>{tsx=null;});
+
+/* ================= rede ================= */
+/* PeerJS (online de verdade) ou BroadcastChannel (?local, para testar em abas) */
+function peerNet(){
+  const opts={debug:0,config:{iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:global.stun.twilio.com:3478"}]}};
+  return {
+    host(code,h){
+      if(typeof Peer==="undefined"){h.onError({type:"no-lib"});return null;}
+      const peer=new Peer(PFX+code,opts), conns={};
+      peer.on("open",()=>h.onReady());
+      peer.on("error",e=>h.onError(e));
+      peer.on("connection",c=>{
+        c.on("open",()=>{conns[c.peer]=c;h.onJoin(c.peer);});
+        c.on("data",m=>h.onMsg(c.peer,m));
+        c.on("close",()=>{delete conns[c.peer];h.onLeave(c.peer);});
+        c.on("error",()=>{});
+      });
+      return {send:(id,m)=>{const c=conns[id];if(c&&c.open)c.send(m);},broadcast:m=>{for(const id in conns){const c=conns[id];if(c.open)c.send(m);}},kick:id=>{const c=conns[id];if(c)setTimeout(()=>c.close(),300);},close:()=>{try{peer.destroy();}catch(e){}}};
+    },
+    join(code,h){
+      if(typeof Peer==="undefined"){h.onError({type:"no-lib"});return null;}
+      const peer=new Peer(undefined,opts); let conn=null, opened=false;
+      peer.on("open",()=>{conn=peer.connect(PFX+code,{reliable:true});
+        conn.on("open",()=>{opened=true;h.onOpen();});conn.on("data",m=>h.onMsg(m));conn.on("close",()=>h.onClose());conn.on("error",()=>{});
+        setTimeout(()=>{if(!opened)h.onError({type:"timeout"});},12000);});
+      peer.on("error",e=>h.onError(e));
+      return {send:m=>{if(conn&&conn.open)conn.send(m);},close:()=>{try{peer.destroy();}catch(e){}}};
+    }
+  };
+}
+function localNet(){
+  return {
+    host(code,h){const ch=new BroadcastChannel("rtp-"+code);
+      ch.onmessage=e=>{const x=e.data;if(x.to!=="host")return;if(x.join)h.onJoin(x.from);else if(x.leave)h.onLeave(x.from);else h.onMsg(x.from,x.m);};
+      setTimeout(()=>h.onReady(),50);
+      return {send:(id,m)=>ch.postMessage({to:id,m}),broadcast:m=>ch.postMessage({to:"*",m}),kick:id=>ch.postMessage({to:id,m:{type:"bye"}}),close:()=>ch.close()};},
+    join(code,h){const ch=new BroadcastChannel("rtp-"+code), id="p"+Math.random().toString(36).slice(2,8);
+      ch.onmessage=e=>{const x=e.data;if(x.to===id||x.to==="*")h.onMsg(x.m);};
+      setTimeout(()=>{ch.postMessage({to:"host",join:true,from:id});h.onOpen();},50);
+      return {send:m=>ch.postMessage({to:"host",from:id,m}),close:()=>{ch.postMessage({to:"host",leave:true,from:id});ch.close();}};}
+  };
+}
+const NET=LOCAL?localNet():peerNet();
+
+let role=null /* "host" | "guest" | "solo" */, link=null, roomCode="", myId="host";
+let lobby={};   /* id -> {char} */
+let others={};  /* id -> estado para desenhar */
+let roster=[];  /* quem está na corrida */
+let results=null;
+
+function errMsg(e){
+  const t=e&&e.type;
+  if(t==="peer-unavailable") return "Sala não encontrada. Confere o código e se quem criou ainda está com o jogo aberto.";
+  if(t==="unavailable-id") return "Esse código já está em uso. Tenta criar a sala de novo.";
+  if(t==="no-lib"||t==="network"||t==="server-error"||t==="socket-error") return "Sem conexão com o servidor do jogo. Confere a internet e tenta de novo.";
+  if(t==="timeout") return "Não deu pra conectar. Tenta ficarem todos no mesmo Wi-Fi.";
+  return "Deu algum problema na conexão. Tenta de novo.";
+}
+
+/* ---- host ---- */
+function createRoom(){
+  role="host"; myId="host"; roomCode=String(1000+Math.floor(Math.random()*9000));
+  lobby={host:{char:myChar}};
+  $("#menuErr").innerHTML="";$("#btnCreate").disabled=true;$("#btnCreate").textContent="Criando sala…";
+  link=NET.host(roomCode,{
+    onReady(){ $("#btnCreate").disabled=false;$("#btnCreate").textContent="Criar sala online"; mode="lobby"; show("lobby"); renderLobby(); },
+    onError(e){ $("#btnCreate").disabled=false;$("#btnCreate").textContent="Criar sala online";
+      if(mode==="menu"){ $("#menuErr").innerHTML=`<div class="err">${errMsg(e)}</div>`; if(link)link.close(); link=null; role=null; }
+      else if(e&&e.type==="network"){ $("#lobbyErr").innerHTML=`<div class="err">${errMsg(e)}</div>`; } },
+    onJoin(id){
+      const n=Object.keys(lobby).length;
+      if(n>=3||mode!=="lobby"){ link.send(id,{type:"full",playing:mode!=="lobby"}); link.kick(id); return; }
+      const taken=Object.values(lobby).map(p=>p.char);
+      lobby[id]={char:CHAR_IDS.find(c=>!taken.includes(c))||null};
+      link.send(id,{type:"welcome",id}); pushLobby();
+    },
+    onLeave(id){ delete lobby[id]; delete others[id]; roster=roster.filter(r=>r!==id); pushLobby(); },
+    onMsg(id,m){
+      if(!lobby[id]) return;
+      if(m.type==="pick"){ const taken=Object.entries(lobby).filter(([k])=>k!==id).map(([,p])=>p.char); if(CHARS[m.char]&&!taken.includes(m.char)){lobby[id].char=m.char;pushLobby();} }
+      else if(m.type==="hello"){ const taken=Object.entries(lobby).filter(([k])=>k!==id).map(([,p])=>p.char); if(CHARS[m.char]&&!taken.includes(m.char)){lobby[id].char=m.char;} pushLobby(); }
+      else if(m.type==="st"){ hostStates[id]=Object.assign(hostStates[id]||{},m.s); }
+    }
+  });
+}
+let hostStates={};
+function pushLobby(){
+  const list=Object.entries(lobby).map(([id,p])=>({id,char:p.char}));
+  if(link) link.broadcast({type:"lobby",list,code:roomCode});
+  applyLobby(list);
+}
+function startRace(){
+  const ready=Object.entries(lobby).filter(([,p])=>p.char);
+  if(!ready.length) return;
+  raceSeed=1+Math.floor(Math.random()*2147483000);
+  roster=ready.map(([id])=>id); hostStates={};
+  const chars={};ready.forEach(([id,p])=>chars[id]=p.char);
+  if(link) link.broadcast({type:"start",seed:raceSeed,roster,chars});
+  beginRace(raceSeed,chars);
+}
+
+/* ---- convidado ---- */
+function joinRoom(){
+  const code=($("#joinCode").value||"").trim();
+  if(!/^\d{4}$/.test(code)){ $("#menuErr").innerHTML=`<div class="err">O código tem 4 números. Pede pra quem criou a sala.</div>`; return; }
+  role="guest"; roomCode=code; $("#menuErr").innerHTML=""; $("#btnJoin").disabled=true; $("#btnJoin").textContent="Entrando…";
+  link=NET.join(code,{
+    onOpen(){ link.send({type:"hello",char:myChar}); },
+    onError(e){ $("#btnJoin").disabled=false;$("#btnJoin").textContent="Entrar na sala";
+      if(mode==="menu"){ $("#menuErr").innerHTML=`<div class="err">${errMsg(e)}</div>`; if(link)link.close(); link=null; role=null; } },
+    onClose(){ if(role==="guest"){ leaveToMenu("A sala foi fechada. Quem criou saiu do jogo."); } },
+    onMsg(m){
+      if(m.type==="welcome"){ myId=m.id; mode="lobby"; $("#btnJoin").disabled=false;$("#btnJoin").textContent="Entrar na sala"; show("lobby"); }
+      else if(m.type==="full"){ leaveToMenu(m.playing?"A corrida já começou. Espera acabar e entra de novo.":"A sala já está cheia (3 pessoas)."); }
+      else if(m.type==="bye"){ leaveToMenu("A sala já está cheia (3 pessoas)."); }
+      else if(m.type==="lobby"){ applyLobby(m.list); }
+      else if(m.type==="start"){ roster=m.roster; beginRace(m.seed,m.chars); }
+      else if(m.type==="all"){ applyAll(m.s); }
+      else if(m.type==="end"){ results=m.r; showResults(); }
+      else if(m.type==="toLobby"){ gameOn=false; mode="lobby"; $("#hud").hidden=true; show("lobby"); renderLobby(); }
+    }
+  });
+}
+
+function applyLobby(list){
+  lobby={}; list.forEach(p=>lobby[p.id]={char:p.char});
+  if(lobby[myId]&&lobby[myId].char){myChar=lobby[myId].char;saveChar();}
+  if(mode==="lobby") renderLobby();
+}
+function renderLobby(){
+  $("#lobbyCode").textContent=roomCode;
+  $("#lobbyRole").textContent=role==="host"?"Você criou a sala":"Você está na sala";
+  const ids=Object.keys(lobby);
+  $("#lobbyList").innerHTML=ids.map(id=>{const c=lobby[id].char;const C=CHARS[c];
+    return `<div class="pl"><span class="av" style="background:${C?C.c:"#555"}">${C?C.name[0]:"?"}</span><span>${C?C.name:"Escolhendo…"}${id===myId?" (você)":""}</span><span class="tag">${id==="host"?"criou a sala":"entrou"}</span></div>`;}).join("")
+    +(ids.length<3?`<div class="pl" style="opacity:.5"><span class="av" style="background:#4A3B2E">+</span><span>Esperando mais gente…</span></div>`:"");
+  const taken=Object.entries(lobby).filter(([k])=>k!==myId).map(([,p])=>p.char);
+  $("#lobbyChars").innerHTML=charButtons(taken,"lpick");
+  $("#btnStart").hidden=role!=="host";
+  $("#lobbyHint").textContent=role==="host"?"Manda esse código pros outros. Eles abrem o jogo e tocam em “Entrar na sala”. Pode começar com quem já entrou.":"Esperando quem criou a sala começar a corrida.";
+}
+function charButtons(taken,attr){
+  return CHAR_IDS.map(c=>{const C=CHARS[c];const t=taken.includes(c);
+    return `<button class="char" data-${attr}="${c}" aria-pressed="${myChar===c}" ${t?"disabled":""}><span class="av" style="background:${C.c}">${C.name[0]}</span>${C.name}${t?"<small>já escolhido</small>":""}</button>`;}).join("");
+}
+
+/* ---- corrida ---- */
+function beginRace(seed,chars){
+  raceSeed=seed; resetMe(); newTrack(seed); genUntil(1500);
+  others={}; results=null;
+  if(chars) for(const id in chars){ if(id===myId){myChar=chars[id];continue;} others[id]={char:chars[id],lane:1,x:LANES[1],d:0,dShown:0,v:250,at:performance.now(),alive:true,coins:0,act:"",phase:0}; }
+  hideAll(); $("#hud").hidden=false; mode="count"; gameOn=false; updateHud();
+  const el=$("#count"); el.hidden=false; let n=3;
+  const tick=()=>{ if(n>0){el.innerHTML=`<span class="pop">${n}</span>`;SFX.beep();n--;setTimeout(tick,800);} else {el.innerHTML=`<span class="pop">CORRE!</span>`;SFX.go();gameOn=true;mode="play";last=performance.now();setTimeout(()=>{el.hidden=true;},700);} };
+  tick();
+  try{ if(navigator.wakeLock) navigator.wakeLock.request("screen").catch(()=>{}); }catch(e){}
+}
+function myState(){return {d:Math.round(me.d),v:Math.round(me.alive?me.v:0),lane:me.lane,alive:me.alive,coins:me.coins,act:me.jumpT>0?"j":me.slideT>0?"s":""};}
+let netAcc=0;
+function sendState(force){
+  if(role==="guest"&&link) link.send({type:"st",s:myState()});
+  if(role==="host") hostStates.host=myState();
+}
+function netTick(dt){
+  if(!(gameOn||mode==="dead")) return;
+  if(role!=="host"&&role!=="guest") return;
+  netAcc+=dt; if(netAcc<0.1) return; netAcc=0;
+  sendState();
+  if(role==="host"){
+    const s={}; roster.forEach(id=>{ if(hostStates[id]) s[id]=hostStates[id]; });
+    link.broadcast({type:"all",s}); applyAll(s);
+    /* fim: todos pegos */
+    const allOut=roster.length&&roster.every(id=>!lobby[id]||(hostStates[id]&&hostStates[id].alive===false));
+    if(allOut&&!results){ results=makeResults(s); link.broadcast({type:"end",r:results}); setTimeout(showResults,900); }
+  }
+}
+function applyAll(s){
+  const now=performance.now();
+  for(const id in s){ if(id===myId) continue; const o=others[id]; if(!o) continue;
+    Object.assign(o,{lane:s[id].lane,d:s[id].d,v:s[id].v,alive:s[id].alive,coins:s[id].coins,act:s[id].act,at:now});
+    if(!o.alive) o.dShown=o.d; }
+  if(mode==="dead") renderWaiting();
+}
+function makeResults(s){
+  const chars={}; roster.forEach(id=>{ if(lobby[id]) chars[id]=lobby[id].char; });
+  return roster.filter(id=>s[id]&&chars[id]).map(id=>({char:chars[id],m:Math.floor(s[id].d/PX),coins:s[id].coins})).sort((a,b)=>b.m-a.m||b.coins-a.coins);
+}
+function onMyDeath(){
+  mode="dead"; gameOn=false;
+  if(role==="solo"){ results=[{char:myChar,m:Math.floor(me.d/PX),coins:me.coins}]; showResults(); return; }
+  show("over"); renderWaiting();
+}
+function renderWaiting(){
+  if(results) return;
+  $("#overEyebrow").textContent="Pego pelo Tio Pira";
+  $("#overTitle").textContent="O Tio Pira te pegou!";
+  $("#overSub").textContent=`Você correu ${Math.floor(me.d/PX)} m e juntou P$ ${me.coins}. Agora é torcer (ou não) pelos outros.`;
+  const rows=[{char:myChar,m:Math.floor(me.d/PX),coins:me.coins,alive:false}];
+  for(const id in others){const o=others[id];if(o.char) rows.push({char:o.char,m:Math.floor((o.alive?o.dShown:o.d)/PX),coins:o.coins,alive:o.alive});}
+  rows.sort((a,b)=>b.m-a.m);
+  $("#overRank").innerHTML=rows.map((r,i)=>rankRow(r,i,r.alive?"ainda correndo":"pego")).join("");
+  $("#overBtns").innerHTML=`<p class="muted small">A corrida acaba quando o Tio Pira pegar todo mundo.</p>`;
+}
+const LINES=["Escapou do Tio Pira por mais tempo.","Quase. Vai secar a louça.","Pego primeiro. Vai lavar o banheiro."];
+function rankRow(r,i,sub){const C=CHARS[r.char];
+  return `<div class="rk"><span class="pos">${i+1}º</span><span class="nm" style="color:${C.c}">${C.name}<small>${sub}</small></span><span class="sc">${r.m} m<small>P$ ${r.coins}</small></span></div>`;}
+function showResults(){
+  mode="over"; gameOn=false; $("#hud").hidden=true; show("over");
+  const r=results||[];
+  const win=r[0];
+  $("#overEyebrow").textContent="Fim da corrida";
+  if(role==="solo"){ $("#overTitle").textContent=`${r[0].m} metros`; $("#overSub").textContent=`Você juntou P$ ${r[0].coins}. O Tio Pira te pegou, mas foi por pouco.`; }
+  else{ $("#overTitle").textContent=win?`${CHARS[win.char].name} venceu!`:"Fim"; $("#overSub").textContent=win&&win.char===myChar?"Você fugiu do Tio Pira por mais tempo que todo mundo.":"O Tio Pira pegou todo mundo. Uns mais rápido que outros."; }
+  $("#overRank").innerHTML=r.map((x,i)=>rankRow(x,i,role==="solo"?"treino":(i===0?LINES[0]:(i===r.length-1?LINES[2]:LINES[1])))).join("");
+  if(role==="host") $("#overBtns").innerHTML=`<button class="btn btn-main" id="btnAgain">Correr de novo</button><button class="btn btn-ghost" id="btnToLobby">Voltar pra sala</button>`;
+  else if(role==="guest") $("#overBtns").innerHTML=`<p class="muted small">Esperando quem criou a sala começar outra.</p><button class="btn btn-ghost" id="btnLeave2">Sair da sala</button>`;
+  else $("#overBtns").innerHTML=`<button class="btn btn-main" id="btnSoloAgain">Correr de novo</button><button class="btn btn-ghost" id="btnMenu">Menu</button>`;
+}
+function startSolo(){ role="solo"; myId="host"; roster=["host"]; beginRace(1+Math.floor(Math.random()*2147483000),{host:myChar}); }
+function leaveToMenu(msg){
+  if(link) link.close(); link=null; role=null; myId="host"; lobby={}; others={}; gameOn=false; mode="menu";
+  $("#hud").hidden=true; $("#count").hidden=true; show("menu"); renderMenu();
+  $("#btnJoin").disabled=false;$("#btnJoin").textContent="Entrar na sala";$("#btnCreate").disabled=false;$("#btnCreate").textContent="Criar sala online";
+  $("#menuErr").innerHTML=msg?`<div class="err">${msg}</div>`:"";
+  resetMe();
+}
+function renderMenu(){ $("#menuChars").innerHTML=charButtons([],"mpick"); }
+
+/* ================= cliques ================= */
 document.addEventListener("click",e=>{
-  const v=e.target.closest("[data-view]"); if(v){view=v.dataset.view;vistoria=null;pinErr="";if(PEOPLE[view]){S.me=view;save();}render();window.scrollTo(0,0);return;}
-  const o=e.target.closest("[data-open]"); if(o){openDeck(o.dataset.open);return;}
-  const b=e.target.closest("button"); const id=b&&b.id;
-  if(id==="newsOk"){S.seenNews=true;save();render();}
-  else if(id==="vOpen"){vistoria=b.dataset.p;pinErr="";render();setTimeout(()=>{const i=$("#pinIn");if(i)i.focus();},50);}
-  else if(id==="pinNo"){vistoria=null;pinErr="";render();}
-  else if(id==="pinOk"){const p=b.dataset.p;const val=($("#pinIn").value||"").trim().toLowerCase();
-    if(hash(val)===PIN_HASH){S.approved[p]=true;save();vistoria=null;pinErr="";render();ding(true);confetti();floater("APROVADO",true);}
-    else{pinErr="Senha errada. Só o Tio Pira sabe a senha.";render();}}
-  else if(id==="spin"){const pp=b.dataset.p;b.disabled=true;b.textContent="Girando…";
-    const w=document.getElementById("wheel"), res=$("#spinRes");
-    const target=LOSE_W-2.5; /* cai na fatia ruim, quase na borda da fatia boa */
-    const deg=360*7+(360-target);
-    const dur=reduce?300:5600;
-    w.style.transition=`transform ${dur}ms cubic-bezier(.12,.7,.06,1)`;
-    requestAnimationFrame(()=>{w.style.transform=`rotate(${deg}deg)`;});
-    let tick=0; const tk=reduce?null:setInterval(()=>{tick++; if(tick<40&&tick%2===0) ding(false);},140);
-    setTimeout(()=>{ if(tk) clearInterval(tk);
-      res.innerHTML=`<b>VIRA PIRA-REAL</b><span>Por um fio! Quase caiu no “Fica com tudo”. O PiraBank lamenta profundamente.</span>`;
-      res.classList.add("show"); sad(); S.spun[pp]=true; save();
-      b.disabled=false; b.textContent="Ver meu extrato"; b.id="verExtrato"; },dur+150);}
-  else if(id==="verExtrato"){render();}
-  else if(id==="votar"){const pp=b.dataset.p, m=$("#voteMsg"); b.disabled=true;
-    const steps=["Registrando seu voto…","Votos pra excluir o site: 1 de 3…","Contando os votos…","Votação encerrada. Resultado:"];
-    steps.forEach((t,i)=>setTimeout(()=>{m.textContent=t; if(i<3) ding(false);},reduce?i*60:i*900));
-    setTimeout(()=>{S.vale[pp]=true;save();const box=$("#valeBox");if(box){box.innerHTML=valeTicket(pp);} ding(true); confetti();},reduce?260:3700);}
-  else if(id==="saque"){const m=$("#saqueMsg");b.disabled=true;m.textContent="Processando saque…";
-    setTimeout(()=>{m.textContent=SAQUE[saqueN%SAQUE.length];saqueN++;b.disabled=false;b.textContent="Tentar sacar de novo";},reduce?50:1400);}
-  else if(id==="dClose"||id==="dClose2") closeDeck();
-  else if(id==="dNext") next();
-  else if(id==="dPrev") prev();
-  else if(id==="dRestart"){deck.fin=false;deck.i=0;renderDeck();}
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.mpick){ myChar=b.dataset.mpick; saveChar(); renderMenu(); return; }
+  if(b.dataset.lpick){ const c=b.dataset.lpick;
+    if(role==="host"){ const taken=Object.entries(lobby).filter(([k])=>k!=="host").map(([,p])=>p.char); if(!taken.includes(c)){lobby.host.char=c;myChar=c;saveChar();pushLobby();} }
+    else if(link){ link.send({type:"pick",char:c}); }
+    return; }
+  switch(b.id){
+    case "btnCreate": createRoom(); break;
+    case "btnJoin": joinRoom(); break;
+    case "btnSolo": startSolo(); break;
+    case "btnStart": startRace(); break;
+    case "btnLeave": case "btnLeave2": leaveToMenu(""); break;
+    case "btnAgain": startRace(); break;
+    case "btnToLobby": if(link) link.broadcast({type:"toLobby"}); gameOn=false; mode="lobby"; show("lobby"); renderLobby(); break;
+    case "btnSoloAgain": startSolo(); break;
+    case "btnMenu": leaveToMenu(""); break;
+  }
 });
-document.addEventListener("keydown",e=>{
-  if(e.key==="Enter"&&e.target&&e.target.id==="pinIn"){const b=$("#pinOk");if(b)b.click();return;}
-  if($("#deck").hidden) return;
-  if(e.key==="ArrowRight") next(); else if(e.key==="ArrowLeft") prev(); else if(e.key==="Escape") closeDeck();
-});
-let tx=null,ty=null;
-$("#deck").addEventListener("touchstart",e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
-$("#deck").addEventListener("touchend",e=>{ if(tx===null) return; const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty; tx=null;
-  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){ if(dx<0) next(); else prev(); }},{passive:true});
+$("#joinCode").addEventListener("keydown",e=>{if(e.key==="Enter")joinRoom();});
+const qs=new URLSearchParams(location.search); if(qs.get("sala")) $("#joinCode").value=qs.get("sala").slice(0,4);
 
-if(S.me&&PEOPLE[S.me]) view=S.me;
-render();
+renderMenu();
+/* fundo do menu: corredor andando sozinho */
+(function idle(){ if(mode==="menu"||mode==="lobby"){ me.d+=2.2; genUntilSafe(); } requestAnimationFrame(idle); })();
+function genUntilSafe(){ if(!track) newTrack(7432); genUntil(me.d+1300); }
 })();
 </script>
-
 </body>
 </html>
