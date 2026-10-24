@@ -1,5 +1,10 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F4C63D">
 <title>Operação Visita</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
@@ -22,6 +27,10 @@
   --p-kaue:#7FA8F0; --p-mariah:#EE80B0; --p-ayron:#F0A35E; --warn-bg:#2E1E12; --warn-ink:#F6BE92; color-scheme:dark }
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;-webkit-text-size-adjust:100%}
+img{max-width:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{background:var(--bg)}
 body{color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
 button{font:inherit;color:inherit;cursor:pointer}
@@ -148,6 +157,8 @@ h3{font-family:var(--display);font-weight:700;font-size:18px;margin:0}
 @keyframes fin{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+</head>
+<body>
 
 <div class="app">
   <header class="top">
@@ -504,3 +515,6 @@ if(S.seed&&S.me&&PEOPLE[S.me]) view=S.me;
 render();
 })();
 </script>
+
+</body>
+</html>
