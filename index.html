@@ -201,6 +201,38 @@ h3{font-family:var(--display);font-weight:700;font-size:18px;margin:0}
 .confetto{position:fixed;top:-16px;width:9px;height:15px;z-index:65;border-radius:2px;pointer-events:none;animation:fall 1.6s linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(620deg)}}
 @media (max-width:560px){.chest-big{flex-direction:column;align-items:flex-start}.news{flex-direction:column}}
+
+.fine{margin:0;font-size:12px;color:var(--muted)}
+.receipt{background:var(--sunken);border:1px dashed var(--line);border-radius:6px;padding:14px;font-family:ui-monospace,"Courier New",monospace;font-size:13px;display:flex;flex-direction:column;gap:6px}
+.rhead{font-weight:800;letter-spacing:.06em;border-bottom:1px dashed var(--line);padding-bottom:8px}
+.rrow{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.rrow span{min-width:0}
+.rrow b{white-space:nowrap}
+.rrow.total{border-top:1px dashed var(--line);padding-top:6px;font-size:14px}
+.rfoot{border-top:1px dashed var(--line);padding-top:8px;color:var(--muted);font-family:var(--body)}
+.saquemsg{font-weight:700;color:var(--warn-ink);min-height:1.5em}
+
+.wheel-wrap{position:relative;width:min(320px,100%);margin:6px auto 0;aspect-ratio:1;max-width:100%}
+.wheel-wrap svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 14px rgba(0,0,0,.25))}
+.wheel{transform-origin:0 0}
+.pointer{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--warn-ink);z-index:2}
+.spin-ctrl{display:flex;justify-content:center}
+.spin-result{text-align:center;display:flex;flex-direction:column;gap:4px;min-height:1px}
+.spin-result b{font-family:var(--display);font-weight:800;font-size:clamp(30px,8vw,44px);color:var(--warn-ink);letter-spacing:-.01em}
+.spin-result.show{animation:shake .6s ease-out}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+
+.votemsg{font-weight:700;min-height:1.5em}
+.vale{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.vale-title{font-size:clamp(40px,11vw,60px);color:var(--scrub);letter-spacing:-.02em;transform:rotate(-2deg);align-self:flex-start}
+.ticket{position:relative;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;box-shadow:inset 0 -6px 0 var(--scrub);
+  -webkit-mask:radial-gradient(circle 10px at 0 50%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 10px at 100% 50%,transparent 98%,#000) right/51% 100% no-repeat;
+          mask:radial-gradient(circle 10px at 0 50%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 10px at 100% 50%,transparent 98%,#000) right/51% 100% no-repeat}
+.t-eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.t-big{font-family:var(--display);font-weight:800;font-size:clamp(30px,8vw,40px);line-height:1;border-bottom:2px dashed var(--sponge-ink);padding-bottom:10px}
+.t-row{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.t-row b{text-align:right}
+.vale-cta{margin:0;font-weight:800;font-size:17px;color:var(--warn-ink)}
 </style>
 </head>
 <body>
@@ -341,7 +373,7 @@ const BY={}; ALL.forEach(t=>BY[t.id]=t);
 const KEY="operacao-visita-v1";
 let S={seed:null,done:{},me:null,approved:{},seenNews:false};
 try{const raw=localStorage.getItem(KEY); if(raw){S=Object.assign(S,JSON.parse(raw));}}catch(e){}
-S.approved=S.approved||{}; S.done=S.done||{};
+S.approved=S.approved||{}; S.done=S.done||{}; S.spun=S.spun||{}; S.vale=S.vale||{};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 let view="plano", vistoria=null, pinErr="";
 
@@ -358,7 +390,8 @@ const PIN_HASH=2090616753;     // senha da vistoria do Tio Pira
 function cents(v){return Math.round(v*100);}
 function potC(t){return cents(t.min*VALOR_POR_MINUTO);}
 function stepC(t,k){const n=t.steps.length,p=potC(t),b=Math.floor(p/n);return k===n-1?p-b*(n-1):b;}
-function brl(c){return "R$ "+(c/100).toFixed(2).replace(".",",");}
+function brl(c,pre){return (pre||"R$")+" "+(c/100).toFixed(2).replace(".",",");}
+function cur(p){return S.approved[p]?"P$":"R$";}
 function doneArr(id){return S.done[id]||[];}
 function isFull(t){return doneArr(t.id).length>=t.steps.length;}
 function earnedTask(t){return doneArr(t.id).reduce((s,k)=>s+stepC(t,k),0)+(isFull(t)?cents(BONUS_TAREFA):0);}
@@ -381,7 +414,7 @@ function nameTag(p){const P=PEOPLE[p];return `<span class="tagname"><span class=
 
 function renderTabs(){
   const items=[["plano","Plano"],...ORDER.map(p=>[p,PEOPLE[p].name]),["comodos","Por cômodo"]];
-  $("#tabs").innerHTML=items.map(([id,l])=>`<button class="tab" role="tab" id="tab-${id}" aria-selected="${view===id}" data-view="${id}">${PEOPLE[id]?`<span class="dot" style="background:${PEOPLE[id].c}"></span>`:""}${l}${PEOPLE[id]?` <span class="tabmoney">${brl(earned(id))}</span>`:""}</button>`).join("");
+  $("#tabs").innerHTML=items.map(([id,l])=>`<button class="tab" role="tab" id="tab-${id}" aria-selected="${view===id}" data-view="${id}">${PEOPLE[id]?`<span class="dot" style="background:${PEOPLE[id].c}"></span>`:""}${l}${PEOPLE[id]?` <span class="tabmoney">${brl(earned(id),cur(id))}</span>`:""}</button>`).join("");
 }
 
 function taskCard(t){
@@ -417,7 +450,27 @@ function chest(p){
 
 function vistoriaPanel(p){
   const l=tasksOf(p), pc=pct(l), name=PEOPLE[p].name;
-  if(S.approved[p]) return `<div class="panel approved"><span class="stamp">Aprovado</span><h3>Vistoria do Tio Pira: aprovada</h3><p style="margin:0">${name} recebe <b>${brl(earned(p))}</b> e o lanche está garantido.</p></div>`;
+  if(S.approved[p] && !S.spun[p]) return roulettePanel(p);
+  if(S.approved[p]){
+    const l2=tasksOf(p), cards=l2.reduce((s,t)=>s+doneArr(t.id).length,0), bon=l2.filter(isFull).length*cents(BONUS_TAREFA), dep=earned(p)-bon;
+    return `<div class="panel approved"><span class="stamp">Aprovado</span>
+      <h3>Vistoria aprovada. Bem-vindo ao PiraBank.</h3>
+      <div class="receipt">
+        <div class="rhead">PIRABANK · EXTRATO OFICIAL · ${name.toUpperCase()}</div>
+        <div class="rrow"><span>Depósitos da faxina (${cards} cards)</span><b>+ ${brl(dep,"P$")}</b></div>
+        <div class="rrow"><span>Bônus de tarefa completa</span><b>+ ${brl(bon,"P$")}</b></div>
+        <div class="rrow"><span>Taxa de uso da vassoura</span><b>isento</b></div>
+        <div class="rrow"><span>Roleta da Sorte</span><b>Vira Pira-Real</b></div>
+        <div class="rrow total"><span>Saldo em Pira-Reais</span><b>${brl(earned(p),"P$")}</b></div>
+        <div class="rrow"><span>Cotação de hoje: 1 Pira-Real =</span><b>R$ 0,00</b></div>
+        <div class="rrow total"><span>Saldo em reais de verdade</span><b>R$ 0,00</b></div>
+        <div class="rfoot">O Pira-Real é a moeda oficial desta casa. Vale exatamente o mesmo que um elogio do Tio Pira, que, convenhamos, não tem preço. Obrigado por acreditar.</div>
+      </div>
+      <p style="margin:0">O que é real de verdade: <b>o Lanche do Tio Pira</b>. Esse está garantido.</p>
+      <div><button class="btn btn-main sponge" id="saque">Sacar ${brl(earned(p),"P$")}</button></div>
+      <div class="saquemsg" id="saqueMsg" aria-live="polite"></div></div>
+      ${valePanel(p)}`;
+  }
   if(pc<100) return `<div class="panel"><h3>Vistoria do Tio Pira</h3><p class="muted" style="margin:0">Bloqueada até você terminar todos os seus cards (${pc}% agora). Quando chegar em 100%, chama o Tio Pira. Ele confere cômodo por cômodo e só aprova se estiver limpo de verdade.</p><div class="warnbox">Marcou card sem fazer? A vistoria pega, e aí a carteira volta pra zero.</div></div>`;
   if(vistoria!==p) return `<div class="panel"><h3>Vistoria do Tio Pira</h3><p style="margin:0">Você terminou tudo. Agora chama o Tio Pira pra conferir.</p><div><button class="btn btn-main sponge" id="vOpen" data-p="${p}">Chamar o Tio Pira</button></div></div>`;
   return `<div class="panel"><h3>Tio Pira, sua vez</h3><p class="muted" style="margin:0">Confere tudo que ${name} fez antes de digitar a senha.</p>
@@ -425,11 +478,62 @@ function vistoriaPanel(p){
     ${pinErr?`<div class="warnbox">${pinErr}</div>`:""}</div>`;
 }
 
+/* ---------- roleta (100% de chance de dar ruim) ---------- */
+const LOSE_W=16;
+const SLICES=[["VIRA PIRA-REAL","var(--ink)","var(--bg)",true],["FICA COM TUDO","var(--sponge)","var(--sponge-ink)"],["DOBRO!","var(--scrub)","var(--scrub-ink)"],["FICA COM TUDO","var(--p-kaue)","var(--surface)"],["TRIPLO!","var(--sponge)","var(--sponge-ink)"],["FICA COM TUDO","var(--p-mariah)","var(--surface)"],["DOBRO!","var(--scrub)","var(--scrub-ink)"],["FICA COM TUDO","var(--p-ayron)","var(--surface)"]];
+function wheelSVG(){
+  const big=(360-LOSE_W)/(SLICES.length-1); let a=0, out="";
+  const pt=(deg,r)=>{const t=deg*Math.PI/180;return [(r*Math.sin(t)).toFixed(2),(-r*Math.cos(t)).toFixed(2)];};
+  SLICES.forEach(([label,bg,fg,lose])=>{const w=lose?LOSE_W:big, b=a+w, [x1,y1]=pt(a,100), [x2,y2]=pt(b,100), mid=a+w/2;
+    out+=`<path d="M0 0 L${x1} ${y1} A100 100 0 ${w>180?1:0} 1 ${x2} ${y2} Z" fill="${bg}" stroke="var(--surface)" stroke-width="1.5"/>`;
+    out+=`<text transform="rotate(${mid.toFixed(2)}) translate(0,-56) rotate(-90)" text-anchor="middle" dominant-baseline="central" fill="${fg}" font-size="${lose?7:9.5}" font-weight="800" font-family="var(--display)">${label}</text>`;
+    a=b;});
+  return `<svg viewBox="-104 -104 208 208" role="img" aria-label="Roleta da Sorte"><g id="wheel" class="wheel">${out}</g><circle r="16" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/><text text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="800" fill="var(--ink)" font-family="var(--display)">P$</text></svg>`;
+}
+function roulettePanel(p){
+  const name=PEOPLE[p].name;
+  return `<div class="panel approved roulette"><span class="stamp">Aprovado</span>
+    <h3>Vistoria aprovada! Agora, a Roleta da Sorte.</h3>
+    <p style="margin:0">Pela lei do PiraBank, todo saque passa pela roleta. ${name} tem <b>${brl(earned(p))}</b> na conta. Pode ficar com tudo, dobrar ou até triplicar. Tem uma fatia pequenininha que ninguém nunca tira.</p>
+    <div class="wheel-wrap"><span class="pointer" aria-hidden="true"></span>${wheelSVG()}</div>
+    <div class="spin-result" id="spinRes" aria-live="polite"></div>
+    <div class="spin-ctrl"><button class="btn btn-main sponge" id="spin" data-p="${p}">Girar a roleta</button></div></div>`;
+}
+function sad(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const now=actx.currentTime;
+  [392,370,349,294].forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),t0=now+i*0.38,len=i===3?1.1:0.34;o.type="sawtooth";o.frequency.value=f;
+    if(i===3){o.frequency.setValueAtTime(f,t0);o.frequency.linearRampToValueAtTime(f*0.94,t0+len);}
+    g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.09,t0+0.03);g.gain.exponentialRampToValueAtTime(0.0001,t0+len);
+    o.connect(g);g.connect(actx.destination);o.start(t0);o.stop(t0+len+0.05);});}catch(e){}}
+
+/* ---------- vale-salgado (se reclamarem) ---------- */
+function valeTicket(p){
+  const msg=p==="kaue"?"Kauê, o vale é seu também, mas quem paga é você. Guarda o print.":"Tira print e manda pro Kauê no próximo dia 5.";
+  return `<div class="vale fade-in">
+    <h2 class="vale-title">ZUEIRA!</h2>
+    <p style="margin:0">Vocês ganharam um <b>vale-salgado na padaria</b> (apenas um) pra quando o Kauê receber dinheiro.</p>
+    <div class="ticket sponge">
+      <span class="t-eyebrow">PiraBank · cupom oficial nº ${S.seed}</span>
+      <span class="t-big">VALE 1 SALGADO</span>
+      <span class="t-row"><span>Onde</span><b>Na padaria</b></span>
+      <span class="t-row"><span>Quem paga</span><b>Kauê</b></span>
+      <span class="t-row"><span>Quando</span><b>Quando o Kauê receber, a partir do dia 5</b></span>
+      <span class="t-row"><span>Quantidade</span><b>Apenas um. Um só.</b></span>
+    </div>
+    <p class="vale-cta">${msg}</p></div>`;
+}
+function valePanel(p){
+  if(S.vale[p]) return `<div class="panel">${valeTicket(p)}</div>`;
+  return `<div class="panel" id="valeBox"><h3>Não gostou do PiraBank?</h3>
+    <p class="muted" style="margin:0">A casa é uma democracia. Se a maioria votar, o site é excluído pra sempre.</p>
+    <div><button class="btn btn-warn" id="votar" data-p="${p}">Votar pra excluir o site</button></div>
+    <div class="votemsg" id="voteMsg" aria-live="polite"></div></div>`;
+}
+
 /* ---------- views ---------- */
 function renderPlano(){
   const people=ORDER.map(p=>{const l=tasksOf(p),pc=pct(l),lv=level(pc);return `<button class="pcard" data-view="${p}">
       <span class="pcard-head">${avatar(p)}<span><span class="who">${PEOPLE[p].name}</span><br><span class="mins">${lv.name}</span></span></span>
-      <span class="pmoney">${brl(earned(p))}<small> de ${brl(maxOf(p))}</small></span>
+      <span class="pmoney">${brl(earned(p),cur(p))}<small> de ${brl(maxOf(p),cur(p))}</small></span>
       <span class="chips">${l.map(t=>`<span class="chip">${t.name}</span>`).join("")}</span>
       <span class="bar"><i style="width:${pc}%"></i></span>
       <span class="mins">${S.approved[p]?"Vistoria aprovada ✓":pc+"% feito · uns "+mins(l)+" min"}</span></button>`;}).join("");
@@ -446,8 +550,9 @@ function renderPlano(){
         <li><b>Cada card feito</b> cai na sua carteira na hora. Tarefa que dá mais trabalho vale mais.</li>
         <li><b>Terminou uma tarefa inteira?</b> Mais ${brl(cents(BONUS_TAREFA))} de bônus.</li>
         <li><b>Sobe de nível</b> conforme avança: de ${LEVELS[0][1]} até ${LEVELS[LEVELS.length-1][1]}.</li>
-        <li><b>No final</b>, o Tio Pira faz a vistoria no seu celular. Aprovou, o dinheiro é seu e o lanche está garantido.</li>
+        <li><b>No final</b>, o Tio Pira faz a vistoria no seu celular. Aprovou, o PiraBank libera o saque e o lanche está garantido. E ainda tem a <b>Roleta da Sorte</b>, que pode dobrar ou até triplicar o que você ganhou.</li>
       </ul>
+      <p class="fine">* Valores administrados pelo PiraBank, instituição financeira oficial desta casa. Condições completas liberadas após a vistoria.</p>
     </div>
     <div class="chest-big"><span class="chest-ico sponge" aria-hidden="true">?</span><div><span class="eyebrow">Prêmio final da equipe</span><h2>Lanche do Tio Pira</h2><p class="muted" style="margin:0">Liberado quando os três terminarem tudo, fizerem o Toque final juntos e passarem na vistoria. O que é? Só vai descobrindo pelas pistas na aba de cada um.</p></div></div>
     <div class="panel"><h2>Ordem do serviço</h2><div class="phases">${phases}</div></div>
@@ -460,9 +565,9 @@ function renderPerson(p){
   return `<section class="section">
     <div class="person-head">${avatar(p)}<div class="txt"><h2>${P.name}</h2><span class="muted">Uns ${mins(l)} min de serviço · ${l.length} tarefas</span></div></div>
     <div class="wallet sponge">
-      <span class="wlabel">Carteira de ${P.name}</span>
-      <span class="amt" id="amt-${p}">${brl(earned(p))}</span>
-      <span class="wsub">de até ${brl(maxOf(p))} · ${S.approved[p]?"liberado pelo Tio Pira ✓":"a receber depois da vistoria"}</span>
+      <span class="wlabel">PiraBank · conta de ${P.name}</span>
+      <span class="amt" id="amt-${p}">${brl(earned(p),cur(p))}</span>
+      <span class="wsub">${S.approved[p]?"Saldo em Pira-Reais · cotação de hoje: 1 Pira-Real = R$ 0,00":"de até "+brl(maxOf(p))+" · saque liberado depois da vistoria*"}</span>
       <span class="wbar"><i style="width:${pc}%"></i></span>
       <span class="wlvl"><span class="lvl">Nível ${lv.i+1}: ${lv.name}</span><span>${nextTxt}</span></span>
     </div>
@@ -551,6 +656,13 @@ function next(){ if(deck.fin) return; const t=BY[deck.id]; const d=doneArr(t.id)
   if(deck.i<t.steps.length-1) deck.i++; else deck.fin=true; renderDeck();}
 function prev(){ if(deck.fin){deck.fin=false;deck.i=BY[deck.id].steps.length-1;} else if(deck.i>0) deck.i--; renderDeck();}
 
+/* ---------- saque (nunca funciona) ---------- */
+const SAQUE=["Saque negado: o caixa eletrônico do PiraBank é o Tio Pira, e ele está ocupado se arrumando.",
+ "Erro 404: dinheiro não encontrado. Tente novamente em nunca.",
+ "Agência mais próxima: atrás do sofá. Horário de atendimento: 30 de fevereiro, das 25h às 26h.",
+ "Seu gerente mandou um recado: obrigado pela faxina, sério. O lanche continua de pé.",
+ "Você tentou sacar 5 vezes. O PiraBank admira sua fé."];
+let saqueN=0;
 /* ---------- eventos ---------- */
 document.addEventListener("click",e=>{
   const v=e.target.closest("[data-view]"); if(v){view=v.dataset.view;vistoria=null;pinErr="";if(PEOPLE[view]){S.me=view;save();}render();window.scrollTo(0,0);return;}
@@ -562,6 +674,25 @@ document.addEventListener("click",e=>{
   else if(id==="pinOk"){const p=b.dataset.p;const val=($("#pinIn").value||"").trim().toLowerCase();
     if(hash(val)===PIN_HASH){S.approved[p]=true;save();vistoria=null;pinErr="";render();ding(true);confetti();floater("APROVADO",true);}
     else{pinErr="Senha errada. Só o Tio Pira sabe a senha.";render();}}
+  else if(id==="spin"){const pp=b.dataset.p;b.disabled=true;b.textContent="Girando…";
+    const w=document.getElementById("wheel"), res=$("#spinRes");
+    const target=LOSE_W-2.5; /* cai na fatia ruim, quase na borda da fatia boa */
+    const deg=360*7+(360-target);
+    const dur=reduce?300:5600;
+    w.style.transition=`transform ${dur}ms cubic-bezier(.12,.7,.06,1)`;
+    requestAnimationFrame(()=>{w.style.transform=`rotate(${deg}deg)`;});
+    let tick=0; const tk=reduce?null:setInterval(()=>{tick++; if(tick<40&&tick%2===0) ding(false);},140);
+    setTimeout(()=>{ if(tk) clearInterval(tk);
+      res.innerHTML=`<b>VIRA PIRA-REAL</b><span>Por um fio! Quase caiu no “Fica com tudo”. O PiraBank lamenta profundamente.</span>`;
+      res.classList.add("show"); sad(); S.spun[pp]=true; save();
+      b.disabled=false; b.textContent="Ver meu extrato"; b.id="verExtrato"; },dur+150);}
+  else if(id==="verExtrato"){render();}
+  else if(id==="votar"){const pp=b.dataset.p, m=$("#voteMsg"); b.disabled=true;
+    const steps=["Registrando seu voto…","Votos pra excluir o site: 1 de 3…","Contando os votos…","Votação encerrada. Resultado:"];
+    steps.forEach((t,i)=>setTimeout(()=>{m.textContent=t; if(i<3) ding(false);},reduce?i*60:i*900));
+    setTimeout(()=>{S.vale[pp]=true;save();const box=$("#valeBox");if(box){box.innerHTML=valeTicket(pp);} ding(true); confetti();},reduce?260:3700);}
+  else if(id==="saque"){const m=$("#saqueMsg");b.disabled=true;m.textContent="Processando saque…";
+    setTimeout(()=>{m.textContent=SAQUE[saqueN%SAQUE.length];saqueN++;b.disabled=false;b.textContent="Tentar sacar de novo";},reduce?50:1400);}
   else if(id==="dClose"||id==="dClose2") closeDeck();
   else if(id==="dNext") next();
   else if(id==="dPrev") prev();
